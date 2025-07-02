@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { GraduationCap, Menu, X, Globe } from "lucide-react";
+import { Link, useLocation } from "react-router-dom";
 
 interface NavigationProps {
   onLoginClick: () => void;
@@ -10,21 +11,24 @@ interface NavigationProps {
 const Navigation = ({ onLoginClick }: NavigationProps) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [language, setLanguage] = useState<'en' | 'ar'>('en');
+  const location = useLocation();
 
   const navItems = [
-    { label: 'Home', labelAr: 'الرئيسية', href: '#home' },
-    { label: 'About', labelAr: 'عن المدرسة', href: '#about' },
-    { label: 'Academics', labelAr: 'الأكاديميات', href: '#academics' },
-    { label: 'Admissions', labelAr: 'القبول', href: '#admissions' },
-    { label: 'Contact', labelAr: 'اتصل بنا', href: '#contact' },
+    { label: 'Home', labelAr: 'الرئيسية', href: '/' },
+    { label: 'About', labelAr: 'عن المدرسة', href: '/about' },
+    { label: 'Academics', labelAr: 'الأكاديميات', href: '/academics' },
+    { label: 'Admissions', labelAr: 'القبول', href: '/admissions' },
+    { label: 'Contact', labelAr: 'اتصل بنا', href: '/contact' },
   ];
+
+  const isActive = (href: string) => location.pathname === href;
 
   return (
     <nav className="fixed top-0 w-full bg-white/95 backdrop-blur-sm shadow-lg z-50">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
-          <div className="flex items-center space-x-3">
+          <Link to="/" className="flex items-center space-x-3">
             <div className="bg-gradient-to-br from-blue-600 to-blue-800 p-2 rounded-lg">
               <GraduationCap className="h-8 w-8 text-white" />
             </div>
@@ -32,18 +36,22 @@ const Navigation = ({ onLoginClick }: NavigationProps) => {
               <h1 className="text-xl font-bold text-gray-900">GCC School</h1>
               <p className="text-sm text-gray-600" dir="rtl">مدرسة دول مجلس التعاون</p>
             </div>
-          </div>
+          </Link>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
             {navItems.map((item) => (
-              <a
+              <Link
                 key={item.href}
-                href={item.href}
-                className="text-gray-700 hover:text-blue-600 transition-colors duration-200 font-medium"
+                to={item.href}
+                className={`transition-colors duration-200 font-medium ${
+                  isActive(item.href) 
+                    ? 'text-blue-600 border-b-2 border-blue-600 pb-1' 
+                    : 'text-gray-700 hover:text-blue-600'
+                }`}
               >
                 {language === 'en' ? item.label : item.labelAr}
-              </a>
+              </Link>
             ))}
           </div>
 
@@ -84,14 +92,16 @@ const Navigation = ({ onLoginClick }: NavigationProps) => {
           <div className="md:hidden pb-4 border-t border-gray-200 mt-4">
             <div className="flex flex-col space-y-4 pt-4">
               {navItems.map((item) => (
-                <a
+                <Link
                   key={item.href}
-                  href={item.href}
-                  className="text-gray-700 hover:text-blue-600 transition-colors duration-200 font-medium px-2 py-1"
+                  to={item.href}
+                  className={`transition-colors duration-200 font-medium px-2 py-1 ${
+                    isActive(item.href) ? 'text-blue-600' : 'text-gray-700 hover:text-blue-600'
+                  }`}
                   onClick={() => setIsMenuOpen(false)}
                 >
                   {language === 'en' ? item.label : item.labelAr}
-                </a>
+                </Link>
               ))}
               <div className="flex items-center justify-between pt-4 border-t border-gray-200">
                 <Button
