@@ -25,7 +25,7 @@ const NewStudentRegistrationForm = () => {
     guardianNameAr: '',
     guardianPhone: '',
     guardianEmail: '',
-    guardianId: '',
+    guardianIdNumber: '',
     relationship: '',
     
     // Academic Information
@@ -48,7 +48,7 @@ const NewStudentRegistrationForm = () => {
     passportCopy: null,
     previousRecords: null,
     medicalRecords: null,
-    guardianId: null
+    guardianIdDocument: null
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -76,7 +76,7 @@ const NewStudentRegistrationForm = () => {
       guardianNameAr: '',
       guardianPhone: '',
       guardianEmail: '',
-      guardianId: '',
+      guardianIdNumber: '',
       relationship: '',
       admissionClass: '',
       admissionSection: '',
@@ -90,7 +90,8 @@ const NewStudentRegistrationForm = () => {
       birthCertificate: null,
       passportCopy: null,
       previousRecords: null,
-      medicalRecords: null
+      medicalRecords: null,
+      guardianIdDocument: null
     });
   };
 
@@ -226,6 +227,31 @@ const NewStudentRegistrationForm = () => {
                   placeholder="guardian@email.com"
                 />
               </div>
+              
+              <div>
+                <Label htmlFor="guardianIdNumber">Guardian ID Number | رقم هوية ولي الأمر</Label>
+                <Input
+                  id="guardianIdNumber"
+                  value={formData.guardianIdNumber}
+                  onChange={(e) => setFormData({...formData, guardianIdNumber: e.target.value})}
+                  placeholder="Enter guardian ID number"
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="relationship">Relationship | العلاقة</Label>
+                <Select value={formData.relationship} onValueChange={(value) => setFormData({...formData, relationship: value})}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select relationship" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="father">Father | الأب</SelectItem>
+                    <SelectItem value="mother">Mother | الأم</SelectItem>
+                    <SelectItem value="guardian">Guardian | الوصي</SelectItem>
+                    <SelectItem value="other">Other | أخرى</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </div>
 
@@ -321,6 +347,19 @@ const NewStudentRegistrationForm = () => {
                     type="file"
                     accept=".pdf,.jpg,.jpeg,.png"
                     onChange={(e) => handleFileChange('medicalRecords', e.target.files?.[0] || null)}
+                  />
+                  <Upload className="h-4 w-4 text-gray-400" />
+                </div>
+              </div>
+              
+              <div>
+                <Label htmlFor="guardianIdDocument">Guardian ID Document | وثيقة هوية ولي الأمر</Label>
+                <div className="mt-1 flex items-center gap-2">
+                  <Input
+                    id="guardianIdDocument"
+                    type="file"
+                    accept=".pdf,.jpg,.jpeg,.png"
+                    onChange={(e) => handleFileChange('guardianIdDocument', e.target.files?.[0] || null)}
                   />
                   <Upload className="h-4 w-4 text-gray-400" />
                 </div>
