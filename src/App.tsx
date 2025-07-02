@@ -10,6 +10,10 @@ import Academics from "./pages/Academics";
 import Admissions from "./pages/Admissions";
 import Contact from "./pages/Contact";
 import Registration from "./pages/dashboard/Registration";
+import Financial from "./pages/dashboard/Financial";
+import Accountant from "./pages/dashboard/Accountant";
+import StudentList from "./pages/dashboard/StudentList";
+import Admin from "./pages/dashboard/Admin";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -27,6 +31,10 @@ const App = () => (
           <Route path="/admissions" element={<Admissions />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/dashboard/registration" element={<Registration />} />
+          <Route path="/dashboard/financial" element={<Financial />} />
+          <Route path="/dashboard/accountant" element={<Accountant />} />
+          <Route path="/dashboard/student-list" element={<StudentList />} />
+          <Route path="/dashboard/admin" element={<Admin />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
