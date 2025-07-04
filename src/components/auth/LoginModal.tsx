@@ -145,8 +145,9 @@ const LoginPage = () => {
                   </div>
 
                   <Button 
+                  style={{backgroundColor:'rgb(102,42,20)'}}
                     type="submit" 
-                    className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white text-lg"
+                    className="w-full h-12 text-white text-lg"
                   >
                     Login | دخول
                   </Button>
