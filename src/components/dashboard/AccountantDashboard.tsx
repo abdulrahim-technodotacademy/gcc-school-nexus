@@ -14,8 +14,8 @@ const AccountantDashboard = () => {
   const [paymentStatus, setPaymentStatus] = useState('');
 
   const stats = [
-    { title: 'Total Payments Today', titleAr: 'إجمالي المدفوعات اليوم', value: '45,250 KWD', icon: DollarSign },
-    { title: 'Receipts Issued', titleAr: 'الإيصالات الصادرة', value: '28', icon: Receipt },
+    { title: 'Total Payments Today', titleAr: 'إجمالي المدفوعات اليوم', value: '45,250 OMR', icon: () => <span className="font-bold text-purple-600">OMR</span> },
+    { title: 'Receipts Issued', titleAr: 'الإيصالات الصادرة', value: '28',  icon: () => <span className="font-bold text-purple-600">OMR</span> },
     { title: 'Pending Payments', titleAr: 'المدفوعات المعلقة', value: '156', icon: AlertCircle },
     { title: 'Fully Paid Students', titleAr: 'الطلاب المسددون بالكامل', value: '342', icon: CheckCircle }
   ];
@@ -97,7 +97,7 @@ const AccountantDashboard = () => {
           className={`px-6 py-3 font-medium ${activeTab === 'payments' ? 'border-b-2 border-purple-600 text-purple-600' : 'text-gray-600'}`}
           onClick={() => setActiveTab('payments')}
         >
-          <DollarSign className="inline mr-2 h-4 w-4" />
+            <span className="inline mr-2">OMR</span>
           Payment Tracking | تتبع المدفوعات
         </button>
         <button
@@ -187,9 +187,9 @@ const AccountantDashboard = () => {
                         </td>
                         <td className="border border-gray-300 px-4 py-3">{payment.class} - {payment.section}</td>
                         <td className="border border-gray-300 px-4 py-3">{payment.course}</td>
-                        <td className="border border-gray-300 px-4 py-3">{payment.totalFee} KWD</td>
-                        <td className="border border-gray-300 px-4 py-3">{payment.paid} KWD</td>
-                        <td className="border border-gray-300 px-4 py-3">{payment.totalFee - payment.paid} KWD</td>
+                        <td className="border border-gray-300 px-4 py-3">{payment.totalFee} OMR</td>
+                        <td className="border border-gray-300 px-4 py-3">{payment.paid} OMR</td>
+                        <td className="border border-gray-300 px-4 py-3">{payment.totalFee - payment.paid} OMR</td>
                         <td className="border border-gray-300 px-4 py-3">
                           <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(payment.status)}`}>
                             {getStatusText(payment.status)}

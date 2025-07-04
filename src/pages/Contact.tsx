@@ -34,28 +34,28 @@ const Contact = () => {
 
   const contactInfo = [
     {
-      icon: <Phone className="h-8 w-8 text-blue-600" />,
+      icon: <Phone className="h-8 w-8 text-[rgb(102,42,20)]" />,
       title: "Phone",
       titleAr: "الهاتف",
       value: "+966 11 XXX XXXX",
       description: "Call us during school hours"
     },
     {
-      icon: <Mail className="h-8 w-8 text-blue-600" />,
+      icon: <Mail className="h-8 w-8 text-[rgb(102,42,20)]" />,
       title: "Email",
       titleAr: "البريد الإلكتروني",
       value: "info@gccschool.edu.sa",
       description: "Send us your inquiries"
     },
     {
-      icon: <MapPin className="h-8 w-8 text-blue-600" />,
+      icon: <MapPin className="h-8 w-8 text-[rgb(102,42,20)]" />,
       title: "Address",
       titleAr: "العنوان",
       value: "King Fahd Road, Riyadh",
       description: "Saudi Arabia"
     },
     {
-      icon: <Clock className="h-8 w-8 text-blue-600" />,
+      icon: <Clock className="h-8 w-8 text-[rgb(102,42,20)]" />,
       title: "Office Hours",
       titleAr: "ساعات العمل",
       value: "Sunday - Thursday",
@@ -72,7 +72,7 @@ const Contact = () => {
         <div className="container mx-auto text-center">
           <h1 className="text-5xl font-bold text-gray-900 mb-6">
             Contact Us
-            <span className="block text-blue-600 mt-2" dir="rtl">اتصل بنا</span>
+            <span className="block text-[rgb(102,42,20)] mt-2" dir="rtl">اتصل بنا</span>
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
             We're here to help! Get in touch with us for admissions, general inquiries, 
@@ -100,7 +100,7 @@ const Contact = () => {
                     {info.icon}
                   </div>
                   <h3 className="text-xl font-bold text-gray-900 mb-2">{info.title}</h3>
-                  <h4 className="text-lg font-semibold text-blue-600 mb-4" dir="rtl">{info.titleAr}</h4>
+                  <h4 className="text-lg font-semibold text-[rgb(102,42,20)] mb-4" dir="rtl">{info.titleAr}</h4>
                   <p className="font-semibold text-gray-700 mb-2">{info.value}</p>
                   <p className="text-gray-600 text-sm">{info.description}</p>
                 </CardContent>
@@ -114,7 +114,7 @@ const Contact = () => {
               <Card className="p-8">
                 <CardContent className="p-0">
                   <h3 className="text-2xl font-bold text-gray-900 mb-6">Send us a Message</h3>
-                  <h4 className="text-xl font-bold text-blue-600 mb-6" dir="rtl">أرسل لنا رسالة</h4>
+                  <h4 className="text-xl font-bold text-[rgb(102,42,20)] mb-6" dir="rtl">أرسل لنا رسالة</h4>
                   
                   <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="grid md:grid-cols-2 gap-4">
@@ -175,7 +175,7 @@ const Contact = () => {
                       />
                     </div>
                     
-                    <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700">
+                    <Button type="submit" className="w-full" style={{backgroundColor:'rgb(102,42,20)'}}> 
                       <Send className="mr-2 h-4 w-4" />
                       Send Message | إرسال الرسالة
                     </Button>
@@ -187,7 +187,7 @@ const Contact = () => {
               <Card className="p-8">
                 <CardContent className="p-0">
                   <h3 className="text-2xl font-bold text-gray-900 mb-6">Visit Our Campus</h3>
-                  <h4 className="text-xl font-bold text-blue-600 mb-6" dir="rtl">زر حرمنا الجامعي</h4>
+                  <h4 className="text-xl font-bold text-[rgb(102,42,20)] mb-6" dir="rtl">زر حرمنا الجامعي</h4>
                   
                   <div className="bg-gray-200 h-64 rounded-lg flex items-center justify-center mb-6">
                     <MapPin className="h-16 w-16 text-gray-400" />

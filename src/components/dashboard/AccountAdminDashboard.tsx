@@ -9,10 +9,10 @@ const AccountAdminDashboard = () => {
   const [activeTab, setActiveTab] = useState<'overview' | 'payments' | 'reports' | 'activities'>('overview');
 
   const stats = [
-    { title: 'Total Revenue', titleAr: 'إجمالي الإيرادات', value: '2,450,000 KWD', icon: DollarSign, trend: '+12.5%' },
+    { title: 'Total Revenue', titleAr: 'إجمالي الإيرادات', value: '2,450,000 OMR', icon: () => <span className="font-bold text-green-600">OMR</span>, trend: '+12.5%' },
     { title: 'Active Students', titleAr: 'الطلاب النشطون', value: '1,245', icon: Users, trend: '+3.2%' },
     { title: 'Collection Rate', titleAr: 'معدل التحصيل', value: '89.5%', icon: TrendingUp, trend: '+5.1%' },
-    { title: 'Outstanding Dues', titleAr: 'المستحقات المعلقة', value: '285,000 KWD', icon: AlertTriangle, trend: '-8.3%' }
+    { title: 'Outstanding Dues', titleAr: 'المستحقات المعلقة', value: '285,000 OMR', icon: AlertTriangle, trend: '-8.3%' }
   ];
 
   const monthlyData = [
@@ -102,7 +102,7 @@ const AccountAdminDashboard = () => {
           className={`px-6 py-3 font-medium ${activeTab === 'payments' ? 'border-b-2 border-red-600 text-red-600' : 'text-gray-600'}`}
           onClick={() => setActiveTab('payments')}
         >
-          <DollarSign className="inline mr-2 h-4 w-4" />
+             <span className="inline mr-2">OMR</span>
           Payment Analytics | تحليل المدفوعات
         </button>
         <button
@@ -179,7 +179,7 @@ const AccountAdminDashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="text-center py-8">
-                <DollarSign className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                <span className="inline mr-2">OMR</span>
                 <h3 className="text-xl font-semibold text-gray-700 mb-2">Detailed Payment Analytics</h3>
                 <p className="text-gray-500 mb-6">Comprehensive analysis of all payment activities</p>
                 <Button className="bg-red-600 hover:bg-red-700">

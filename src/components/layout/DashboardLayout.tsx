@@ -51,7 +51,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
         <div className="absolute bottom-4 left-4 right-4">
           <Button
             variant="ghost"
-            className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
+            className="max-w-[200px] justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
             onClick={handleLogout}
           >
             <LogOut className="h-4 w-4" />

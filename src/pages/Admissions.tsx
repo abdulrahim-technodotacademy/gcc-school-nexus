@@ -11,31 +11,31 @@ const Admissions = () => {
 
   const requirements = [
     {
-      icon: <FileText className="h-6 w-6 text-blue-600" />,
+      icon: <FileText className="h-6 w-6 text-[rgb(102,42,20)]" />,
       title: "Birth Certificate",
       titleAr: "شهادة الميلاد",
       description: "Original and copy required"
     },
     {
-      icon: <FileText className="h-6 w-6 text-blue-600" />,
+      icon: <FileText className="h-6 w-6 text-[rgb(102,42,20)]" />,
       title: "Passport Copy",
       titleAr: "صورة جواز السفر",
       description: "Valid passport with visa"
     },
     {
-      icon: <FileText className="h-6 w-6 text-blue-600" />,
+      icon: <FileText className="h-6 w-6 text-[rgb(102,42,20)]" />,
       title: "Previous School Records",
       titleAr: "سجلات المدرسة السابقة",
       description: "Academic transcripts and certificates"
     },
     {
-      icon: <FileText className="h-6 w-6 text-blue-600" />,
+      icon: <FileText className="h-6 w-6 text-[rgb(102,42,20)]" />,
       title: "Medical Records",
       titleAr: "السجلات الطبية",
       description: "Vaccination records and health certificate"
     },
     {
-      icon: <FileText className="h-6 w-6 text-blue-600" />,
+      icon: <FileText className="h-6 w-6 text-[rgb(102,42,20)]" />,
       title: "Guardian Information",
       titleAr: "معلومات ولي الأمر",
       description: "ID copies and contact details"
@@ -90,7 +90,7 @@ const Admissions = () => {
         <div className="container mx-auto text-center">
           <h1 className="text-5xl font-bold text-gray-900 mb-6">
             Admissions
-            <span className="block text-blue-600 mt-2" dir="rtl">القبول والتسجيل</span>
+            <span className="block text-[rgb(102,42,20)] mt-2" dir="rtl">القبول والتسجيل</span>
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
             Join our community of learners and begin an educational journey that combines 
@@ -102,8 +102,9 @@ const Admissions = () => {
           
           <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
             <Button 
+            style={{backgroundColor: 'rgb(102,42,20)'}}
               size="lg" 
-              className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4"
+              className=" text-white px-8 py-4"
               onClick={() => setIsLoginOpen(true)}
             >
               <Upload className="mr-2 h-5 w-5" />
@@ -112,7 +113,7 @@ const Admissions = () => {
             <Button 
               size="lg" 
               variant="outline" 
-              className="border-blue-600 text-blue-600 hover:bg-blue-50 px-8 py-4"
+              className=" text-[rgb(102,42,20)] hover:bg-blue-50 px-8 py-4"
             >
               <Download className="mr-2 h-5 w-5" />
               Download Forms | تحميل النماذج
@@ -135,12 +136,12 @@ const Admissions = () => {
                 <Card key={index} className="p-6 hover:shadow-lg transition-shadow">
                   <CardContent className="p-0">
                     <div className="flex items-start space-x-4">
-                      <div className="bg-blue-600 text-white rounded-full w-12 h-12 flex items-center justify-center font-bold text-lg">
+                      <div style={{backgroundColor:'rgb(102,42,20)'}} className=" text-white rounded-full w-12 h-12 flex items-center justify-center font-bold text-lg">
                         {step.step}
                       </div>
                       <div className="flex-1">
                         <h3 className="text-xl font-bold text-gray-900 mb-2">{step.title}</h3>
-                        <h4 className="text-lg font-semibold text-blue-600 mb-3" dir="rtl">{step.titleAr}</h4>
+                        <h4 className="text-lg font-semibold text-[rgb(102,42,20)] mb-3" dir="rtl">{step.titleAr}</h4>
                         <p className="text-gray-600">{step.description}</p>
                       </div>
                     </div>
@@ -170,7 +171,7 @@ const Admissions = () => {
                     </div>
                     <div>
                       <h3 className="font-bold text-gray-900 mb-1">{req.title}</h3>
-                      <h4 className="text-sm font-semibold text-blue-600 mb-2" dir="rtl">{req.titleAr}</h4>
+                      <h4 className="text-sm font-semibold text-[rgb(102,42,20)] mb-2" dir="rtl">{req.titleAr}</h4>
                       <p className="text-gray-600 text-sm">{req.description}</p>
                     </div>
                   </div>
@@ -194,7 +195,7 @@ const Admissions = () => {
               <CardContent className="p-0">
                 <div className="space-y-6">
                   <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg">
-                    <Calendar className="h-6 w-6 text-blue-600" />
+                    <Calendar className="h-6 w-6 text-[rgb(102,42,20)]" />
                     <div className="text-center">
                       <p className="font-semibold">Application Deadline</p>
                       <p className="text-gray-600">March 31, 2024</p>

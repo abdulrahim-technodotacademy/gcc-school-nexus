@@ -5,8 +5,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { FileText, DollarSign, Users, Download, Eye, PenTool } from "lucide-react";
+import { FileText, DollarSign, Users, Download, Eye, PenTool,  } from "lucide-react";
 import { useState } from "react";
+
 
 const FinancialAgreementDashboard = () => {
   const [activeTab, setActiveTab] = useState<'fees' | 'agreements' | 'esign'>('fees');
@@ -14,7 +15,7 @@ const FinancialAgreementDashboard = () => {
   const [selectedCourse, setSelectedCourse] = useState('');
 
   const stats = [
-    { title: 'Fee Structures Created', titleAr: 'هياكل الرسوم المنشأة', value: '24', icon: DollarSign },
+    { title: 'Fee Structures Created', titleAr: 'هياكل الرسوم المنشأة', value: '24', icon: () => <span className="font-bold text-green-600">OMR</span> },
     { title: 'Agreements Generated', titleAr: 'الاتفاقيات المولدة', value: '156', icon: FileText },
     { title: 'E-Signatures Pending', titleAr: 'التوقيعات الإلكترونية المعلقة', value: '12', icon: PenTool },
     { title: 'Completed Agreements', titleAr: 'الاتفاقيات المكتملة', value: '89', icon: Users }
@@ -84,7 +85,7 @@ const FinancialAgreementDashboard = () => {
           className={`px-6 py-3 font-medium ${activeTab === 'fees' ? 'border-b-2 border-green-600 text-green-600' : 'text-gray-600'}`}
           onClick={() => setActiveTab('fees')}
         >
-          <DollarSign className="inline mr-2 h-4 w-4" />
+          <span className="inline mr-2">OMR</span>
           Fee Structure | هيكل الرسوم
         </button>
         <button
@@ -206,7 +207,7 @@ const FinancialAgreementDashboard = () => {
               <div className="border-t pt-4">
                 <div className="flex justify-between items-center text-xl font-bold">
                   <span>Total Amount | المبلغ الإجمالي:</span>
-                  <span className="text-green-600">{feeStructure.total} KWD</span>
+                  <span className="text-green-600">{feeStructure.total} OMR</span>
                 </div>
               </div>
 

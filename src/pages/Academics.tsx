@@ -10,7 +10,7 @@ const Academics = () => {
 
   const programs = [
     {
-      icon: <BookOpen className="h-8 w-8 text-blue-600" />,
+      icon: <BookOpen className="h-8 w-8 text-[rgb(102,42,20)]" />,
       title: "Primary Education",
       titleAr: "التعليم الابتدائي",
       grades: "KG - Grade 5",
@@ -18,7 +18,7 @@ const Academics = () => {
       description: "Foundation building with focus on Islamic values and basic academics."
     },
     {
-      icon: <Users className="h-8 w-8 text-blue-600" />,
+      icon: <Users className="h-8 w-8 text-[rgb(102,42,20)]" />,
       title: "Middle School",
       titleAr: "المرحلة المتوسطة",
       grades: "Grade 6 - Grade 8",
@@ -26,7 +26,7 @@ const Academics = () => {
       description: "Comprehensive curriculum preparing students for advanced studies."
     },
     {
-      icon: <Award className="h-8 w-8 text-blue-600" />,
+      icon: <Award className="h-8 w-8 text-[rgb(102,42,20)]" />,
       title: "High School",
       titleAr: "المرحلة الثانوية",
       grades: "Grade 9 - Grade 12",
@@ -53,7 +53,7 @@ const Academics = () => {
         <div className="container mx-auto text-center">
           <h1 className="text-5xl font-bold text-gray-900 mb-6">
             Academic Programs
-            <span className="block text-blue-600 mt-2" dir="rtl">البرامج الأكاديمية</span>
+            <span className="block text-[rgb(102,42,20)] mt-2" dir="rtl">البرامج الأكاديمية</span>
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
             Our comprehensive curriculum combines international standards with Islamic values, 
@@ -82,7 +82,7 @@ const Academics = () => {
                     {program.icon}
                   </div>
                   <h3 className="text-2xl font-bold text-gray-900 mb-2">{program.title}</h3>
-                  <h4 className="text-xl font-semibold text-blue-600 mb-4" dir="rtl">{program.titleAr}</h4>
+                  <h4 className="text-xl font-semibold text-[rgb(102,42,20)] mb-4" dir="rtl">{program.titleAr}</h4>
                   <div className="bg-gray-50 p-4 rounded-lg mb-4">
                     <p className="font-semibold text-gray-700">{program.grades}</p>
                     <p className="text-gray-600" dir="rtl">{program.gradesAr}</p>
@@ -134,7 +134,7 @@ const Academics = () => {
               <CardContent className="p-0">
                 <div className="space-y-4">
                   <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg">
-                    <Clock className="h-6 w-6 text-blue-600" />
+                    <Clock className="h-6 w-6 text-[rgb(102,42,20)]" />
                     <div className="text-center">
                       <p className="font-semibold">School Hours</p>
                       <p className="text-gray-600">7:30 AM - 2:30 PM</p>

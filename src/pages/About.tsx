@@ -10,28 +10,28 @@ const About = () => {
 
   const values = [
     {
-      icon: <BookOpen className="h-12 w-12 text-blue-600" />,
+      icon: <BookOpen className="h-12 w-12 text-[rgb(102,42,20)]" />,
       title: "Academic Excellence",
       titleAr: "التميز الأكاديمي",
       description: "We maintain the highest standards of education following GCC curriculum guidelines.",
       descriptionAr: "نحافظ على أعلى معايير التعليم وفقاً لإرشادات مناهج دول مجلس التعاون الخليجي"
     },
     {
-      icon: <Heart className="h-12 w-12 text-blue-600" />,
+      icon: <Heart className="h-12 w-12 text-[rgb(102,42,20)]" />,
       title: "Islamic Values",
       titleAr: "القيم الإسلامية",
       description: "Character building through Islamic principles and moral education.",
       descriptionAr: "بناء الشخصية من خلال المبادئ الإسلامية والتربية الأخلاقية"
     },
     {
-      icon: <Users className="h-12 w-12 text-blue-600" />,
+      icon: <Users className="h-12 w-12 text-[rgb(102,42,20)]" />,
       title: "Community Focus",
       titleAr: "التركيز على المجتمع",
       description: "Building strong relationships within our diverse learning community.",
       descriptionAr: "بناء علاقات قوية داخل مجتمعنا التعليمي المتنوع"
     },
     {
-      icon: <Globe className="h-12 w-12 text-blue-600" />,
+      icon: <Globe className="h-12 w-12 text-[rgb(102,42,20)]" />,
       title: "Global Perspective",
       titleAr: "المنظور العالمي",
       description: "Preparing students for success in a globalized world.",
@@ -48,7 +48,7 @@ const About = () => {
         <div className="container mx-auto text-center">
           <h1 className="text-5xl font-bold text-gray-900 mb-6">
             About Our School
-            <span className="block text-blue-600 mt-2" dir="rtl">عن مدرستنا</span>
+            <span className="block text-[rgb(102,42,20)] mt-2" dir="rtl">عن مدرستنا</span>
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
             AL-MAWHIBA School has been a beacon of educational excellence for over two decades, 
@@ -67,7 +67,7 @@ const About = () => {
           <div className="grid md:grid-cols-2 gap-12">
             <Card className="p-8 border-0 shadow-lg">
               <CardContent className="p-0">
-                <h2 className="text-3xl font-bold text-blue-600 mb-4">Our Mission</h2>
+                <h2 className="text-3xl font-bold text-[rgb(102,42,20)] mb-4">Our Mission</h2>
                 <h3 className="text-2xl font-bold text-gray-800 mb-6" dir="rtl">مهمتنا</h3>
                 <p className="text-gray-600 leading-relaxed mb-4">
                   To provide a comprehensive Islamic education that develops students intellectually, 
@@ -82,7 +82,7 @@ const About = () => {
 
             <Card className="p-8 border-0 shadow-lg">
               <CardContent className="p-0">
-                <h2 className="text-3xl font-bold text-blue-600 mb-4">Our Vision</h2>
+                <h2 className="text-3xl font-bold text-[rgb(102,42,20)] mb-4">Our Vision</h2>
                 <h3 className="text-2xl font-bold text-gray-800 mb-6" dir="rtl">رؤيتنا</h3>
                 <p className="text-gray-600 leading-relaxed mb-4">
                   To be the leading educational institution in the GCC region, 
@@ -114,7 +114,7 @@ const About = () => {
                     {value.icon}
                   </div>
                   <h3 className="text-xl font-bold text-gray-900 mb-2">{value.title}</h3>
-                  <h4 className="text-lg font-semibold text-blue-600 mb-4" dir="rtl">{value.titleAr}</h4>
+                  <h4 className="text-lg font-semibold text-[rgb(102,42,20)] mb-4" dir="rtl">{value.titleAr}</h4>
                   <p className="text-gray-600 mb-3">{value.description}</p>
                   <p className="text-gray-500 text-sm" dir="rtl">{value.descriptionAr}</p>
                 </CardContent>

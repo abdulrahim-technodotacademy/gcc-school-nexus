@@ -46,10 +46,11 @@ const Navigation = () => {
               <Link
                 key={item.href}
                 to={item.href}
+                style={{borderBottom: isActive(item.href) ? '2px solid rgb(102,42,20)' : 'none'}}
                 className={`transition-colors duration-200 font-medium ${
                   isActive(item.href) 
-                    ? 'text-blue-600 border-b-2 border-blue-600 pb-1' 
-                    : 'text-gray-700 hover:text-blue-600'
+                    ? 'text-[rgb(102,42,20)] border-b-2  pb-1' 
+                    : 'text-gray-700 hover:text-[rgb(102,42,20)]'
                 }`}
               >
                 {language === 'en' ? item.label : item.labelAr}
@@ -63,15 +64,15 @@ const Navigation = () => {
               variant="ghost"
               size="sm"
               onClick={() => setLanguage(language === 'en' ? 'ar' : 'en')}
-              className="text-gray-600 hover:text-blue-600"
+              className="text-gray-600 hover:text-[rgb(102,42,20)]"
             >
               <Globe className="h-4 w-4 mr-1" />
               {language === 'en' ? 'عربي' : 'English'}
             </Button>
             <Button 
-              onClick={handleLogin}
-              className="bg-blue-600 hover:bg-blue-700 text-white"
-            >
+  onClick={handleLogin}
+  className="bg-[#79361C] hover:bg-[#662A14] text-white"
+>
               Login | دخول
             </Button>
           </div>
@@ -95,10 +96,11 @@ const Navigation = () => {
             <div className="flex flex-col space-y-4 pt-4">
               {navItems.map((item) => (
                 <Link
+                 style={{backgroundColor:'rgb(102,42,20)'}}
                   key={item.href}
                   to={item.href}
                   className={`transition-colors duration-200 font-medium px-2 py-1 ${
-                    isActive(item.href) ? 'text-blue-600' : 'text-gray-700 hover:text-blue-600'
+                    isActive(item.href) ? 'text-[rgb(102,42,20)]' : 'text-gray-700 hover:text-[rgb(102,42,20)]'
                   }`}
                   onClick={() => setIsMenuOpen(false)}
                 >
@@ -110,14 +112,14 @@ const Navigation = () => {
                   variant="ghost"
                   size="sm"
                   onClick={() => setLanguage(language === 'en' ? 'ar' : 'en')}
-                  className="text-gray-600 hover:text-blue-600"
+                  className="text-gray-600 hover:text-[rgb(102,42,20)]"
                 >
                   <Globe className="h-4 w-4 mr-1" />
                   {language === 'en' ? 'عربي' : 'English'}
                 </Button>
                 <Button 
                   onClick={handleLogin}
-                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                  className="text-[rgb(102,42,20)] hover:bg-blue-700 text-white"
                 >
                   Login | دخول
                 </Button>
