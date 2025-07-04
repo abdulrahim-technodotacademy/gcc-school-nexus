@@ -57,7 +57,8 @@ const LoginPage = () => {
         <div className="container mx-auto px-4 py-8 md:py-12">
           <div className="flex flex-col items-center mb-8 pt-4">
             <div className="bg-gradient-to-br mb-4 mt-6">
-                   <img src="/assets/logo.png" alt="School Logo" width={'80px'} />
+                   {/* <img src="/assets/logo.png" alt="School Logo" width={'80px'} /> */}
+                   <img src="/assets/logobr.png" alt="School Logo" width={'80px'} />
             </div>
             <h1 className="text-3xl font-bold text-center">
               School Management Portal

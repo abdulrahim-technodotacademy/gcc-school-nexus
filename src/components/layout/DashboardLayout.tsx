@@ -25,7 +25,8 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
         <div className="p-4 border-b border-gray-200">
           <div className="flex items-center space-x-3">
             <div className=" p-2 rounded-lg">
-              <img src="/assets/logo.png" alt="School Logo" width={'40px'} />
+              {/* <img src="/assets/logo.png" alt="School Logo" width={'40px'} /> */}
+              <img src="/assets/logobr.png" alt="School Logo" width={'40px'} />
             </div>
             {isSidebarOpen && (
               <div>

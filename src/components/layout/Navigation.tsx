@@ -35,7 +35,7 @@ const Navigation = () => {
               <img src="/assets/logobr.png" alt="School Logo" width={'80px'} />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-gray-900">AL-MAWHIBA SCHOOL</h1>
+              <h1 className="text-xl font-bold text-gray-900">AL-MAWHIBA PRIVATE SCHOOL</h1>
               <p className="text-sm text-gray-600" dir="rtl">مدرسة دول مجلس التعاون</p>
             </div>
           </Link>
