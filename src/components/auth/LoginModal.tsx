@@ -1,50 +1,40 @@
-
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
-import { GraduationCap, User, Lock, Building } from "lucide-react";
+import { GraduationCap, User, Lock, Building, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import Navigation from "@/components/layout/Navigation";
 
-interface LoginModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-}
+const userRoles = [
+  { value: 'registration', label: 'Registration Staff', labelAr: 'موظف التسجيل' },
+  { value: 'financial', label: 'Financial Agreement Staff', labelAr: 'موظف الاتفاقية المالية' },
+  { value: 'accountant', label: 'Accountant Staff', labelAr: 'موظف المحاسبة' },
+  { value: 'student-list', label: 'Student List Staff', labelAr: 'موظف قوائم الطلاب' },
+  { value: 'account-admin', label: 'Account Admin', labelAr: 'مدير الحسابات' }
+];
 
-const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
+const LoginPage = () => {
   const navigate = useNavigate();
+  const [activeRole, setActiveRole] = useState<string | null>(null);
   const [credentials, setCredentials] = useState({
     username: '',
-    password: '',
-    role: ''
+    password: ''
   });
 
-  const userRoles = [
-    { value: 'registration', label: 'Registration Staff', labelAr: 'موظف التسجيل' },
-    { value: 'financial', label: 'Financial Agreement Staff', labelAr: 'موظف الاتفاقية المالية' },
-    { value: 'accountant', label: 'Accountant Staff', labelAr: 'موظف المحاسبة' },
-    { value: 'student-list', label: 'Student List Staff', labelAr: 'موظف قوائم الطلاب' },
-    { value: 'account-admin', label: 'Account Admin', labelAr: 'مدير الحسابات' }
-  ];
-
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = (e: React.FormEvent, role: string) => {
     e.preventDefault();
     
-    if (!credentials.username || !credentials.password || !credentials.role) {
+    if (!credentials.username || !credentials.password) {
       toast.error("Please fill in all fields");
       return;
     }
 
-    // Mock authentication - in real app, this would call your API
-    console.log('Login attempt:', credentials);
+    console.log('Login attempt:', { ...credentials, role });
+    toast.success(`Welcome! Logging in as ${role}`);
     
-    toast.success(`Welcome! Logging in as ${credentials.role}`);
-    
-    // Navigate to appropriate dashboard based on role
     const dashboardRoutes = {
       'registration': '/dashboard/registration',
       'financial': '/dashboard/financial',
@@ -54,101 +44,119 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
     };
     
     setTimeout(() => {
-      navigate(dashboardRoutes[credentials.role as keyof typeof dashboardRoutes]);
-      onClose();
+      navigate(dashboardRoutes[role as keyof typeof dashboardRoutes]);
+      setActiveRole(null); // Close modal after navigation
     }, 1000);
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle className="flex items-center justify-center gap-2 text-2xl">
-            <div className="bg-gradient-to-br from-blue-600 to-blue-800 p-2 rounded-lg">
-              <GraduationCap className="h-6 w-6 text-white" />
+    <div className="flex flex-col min-h-screen">
+      <Navigation />
+      
+      <main className="flex-1 bg-gray-50">
+        <div className="container mx-auto px-4 py-8 md:py-12">
+          <div className="flex flex-col items-center mb-8 pt-4">
+            <div className="bg-gradient-to-br mb-4 mt-6">
+                   <img src="/assets/logo.png" alt="School Logo" width={'80px'} />
             </div>
-            School Management Portal
-          </DialogTitle>
-          <p className="text-center text-gray-600" dir="rtl">
-            بوابة إدارة المدرسة
-          </p>
-        </DialogHeader>
+            <h1 className="text-3xl font-bold text-center">
+              School Management Portal
+            </h1>
+            <p className="text-center text-gray-600" dir="rtl">
+              بوابة إدارة المدرسة
+            </p>
+          </div>
 
-        <Card>
-          <CardContent className="p-6">
-            <form onSubmit={handleLogin} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="role" className="flex items-center gap-2">
-                  <Building className="h-4 w-4" />
-                  Role | الدور
-                </Label>
-                <Select 
-                  value={credentials.role} 
-                  onValueChange={(value) => setCredentials({...credentials, role: value})}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select your role | اختر دورك" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {userRoles.map((role) => (
-                      <SelectItem key={role.value} value={role.value}>
-                        <div className="flex flex-col">
-                          <span>{role.label}</span>
-                          <span className="text-sm text-gray-500" dir="rtl">{role.labelAr}</span>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="username" className="flex items-center gap-2">
-                  <User className="h-4 w-4" />
-                  Username | اسم المستخدم
-                </Label>
-                <Input
-                  id="username"
-                  type="text"
-                  placeholder="Enter username"
-                  value={credentials.username}
-                  onChange={(e) => setCredentials({...credentials, username: e.target.value})}
-                  className="h-12"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="password" className="flex items-center gap-2">
-                  <Lock className="h-4 w-4" />
-                  Password | كلمة المرور
-                </Label>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="Enter password"
-                  value={credentials.password}
-                  onChange={(e) => setCredentials({...credentials, password: e.target.value})}
-                  className="h-12"
-                />
-              </div>
-
-              <Button 
-                type="submit" 
-                className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white text-lg"
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            {userRoles.map((role) => (
+              <Button
+                key={role.value}
+                variant="outline"
+                className="h-24 flex flex-col items-center justify-center gap-2"
+                onClick={() => setActiveRole(role.value)}
               >
-                Login | دخول
+                <Building className="h-6 w-6" />
+                <div>
+                  <div>{role.label}</div>
+                  <div className="text-sm" dir="rtl">{role.labelAr}</div>
+                </div>
               </Button>
-            </form>
-          </CardContent>
-        </Card>
+            ))}
+          </div>
 
-        <div className="text-center text-sm text-gray-500">
-          <p>Secure access to school management system</p>
-          <p dir="rtl">وصول آمن لنظام إدارة المدرسة</p>
+          <div className="text-center text-sm text-gray-500 mt-8">
+            <p>Secure access to school management system</p>
+            <p dir="rtl">وصول آمن لنظام إدارة المدرسة</p>
+          </div>
         </div>
-      </DialogContent>
-    </Dialog>
+
+        {/* Modal for login form */}
+        {activeRole && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+            <Card className="w-full max-w-md relative">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="absolute top-2 right-2 p-1 h-8 w-8"
+                onClick={() => setActiveRole(null)}
+                aria-label="Close modal"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+              
+              <CardContent className="p-6 pt-10">
+                <div className="flex items-center gap-2 mb-4">
+                  <Building className="h-5 w-5" />
+                  <h2 className="text-xl font-semibold">
+                    {userRoles.find(r => r.value === activeRole)?.label}
+                  </h2>
+                </div>
+                
+                <form onSubmit={(e) => handleLogin(e, activeRole)} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="username" className="flex items-center gap-2">
+                      <User className="h-4 w-4" />
+                      Username | اسم المستخدم
+                    </Label>
+                    <Input
+                      id="username"
+                      type="text"
+                      placeholder="Enter username"
+                      value={credentials.username}
+                      onChange={(e) => setCredentials({...credentials, username: e.target.value})}
+                      className="h-12"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="password" className="flex items-center gap-2">
+                      <Lock className="h-4 w-4" />
+                      Password | كلمة المرور
+                    </Label>
+                    <Input
+                      id="password"
+                      type="password"
+                      placeholder="Enter password"
+                      value={credentials.password}
+                      onChange={(e) => setCredentials({...credentials, password: e.target.value})}
+                      className="h-12"
+                    />
+                  </div>
+
+                  <Button 
+                    type="submit" 
+                    className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white text-lg"
+                  >
+                    Login | دخول
+                  </Button>
+                </form>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+      </main>
+    </div>
   );
 };
 
-export default LoginModal;
+export default LoginPage;

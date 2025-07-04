@@ -71,6 +71,13 @@ const RegistrationDashboard = () => {
 
       {/* Main Action Tabs */}
       <div className="flex space-x-4 border-b">
+          <button
+          className={`px-6 py-3 font-medium ${activeTab === 'new' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-600'}`}
+          onClick={() => setActiveTab('new')}
+        >
+          <UserPlus className="inline mr-2 h-4 w-4" />
+          New Registration | تسجيل جديد
+        </button>
         <button
           className={`px-6 py-3 font-medium ${activeTab === 'search' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-600'}`}
           onClick={() => setActiveTab('search')}
@@ -78,13 +85,7 @@ const RegistrationDashboard = () => {
           <Search className="inline mr-2 h-4 w-4" />
           Search Students | البحث عن الطلاب
         </button>
-        <button
-          className={`px-6 py-3 font-medium ${activeTab === 'new' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-600'}`}
-          onClick={() => setActiveTab('new')}
-        >
-          <UserPlus className="inline mr-2 h-4 w-4" />
-          New Registration | تسجيل جديد
-        </button>
+      
         <button
           className={`px-6 py-3 font-medium ${activeTab === 'promotion' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-600'}`}
           onClick={() => setActiveTab('promotion')}

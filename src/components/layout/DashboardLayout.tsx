@@ -24,8 +24,8 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
       <div className={`bg-white shadow-lg transition-all duration-300 ${isSidebarOpen ? 'w-64' : 'w-16'}`}>
         <div className="p-4 border-b border-gray-200">
           <div className="flex items-center space-x-3">
-            <div className="bg-gradient-to-br from-blue-600 to-blue-800 p-2 rounded-lg">
-              <GraduationCap className="h-6 w-6 text-white" />
+            <div className=" p-2 rounded-lg">
+              <img src="/assets/logo.png" alt="School Logo" width={'40px'} />
             </div>
             {isSidebarOpen && (
               <div>

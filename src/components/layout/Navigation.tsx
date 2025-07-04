@@ -1,17 +1,13 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { GraduationCap, Menu, X, Globe } from "lucide-react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
-interface NavigationProps {
-  onLoginClick: () => void;
-}
-
-const Navigation = ({ onLoginClick }: NavigationProps) => {
+const Navigation = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [language, setLanguage] = useState<'en' | 'ar'>('en');
   const location = useLocation();
+  const navigate = useNavigate();
 
   const navItems = [
     { label: 'Home', labelAr: 'الرئيسية', href: '/' },
@@ -23,17 +19,23 @@ const Navigation = ({ onLoginClick }: NavigationProps) => {
 
   const isActive = (href: string) => location.pathname === href;
 
+  const handleLogin = () => {
+  
+    navigate('/admin/login');
+  };
+
   return (
     <nav className="fixed top-0 w-full bg-white/95 backdrop-blur-sm shadow-lg z-50">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-3">
-            <div className="bg-gradient-to-br from-blue-600 to-blue-800 p-2 rounded-lg">
-              <GraduationCap className="h-8 w-8 text-white" />
+            <div className=" p-2 rounded-lg">
+              {/* <img src="/assets/logo.png" alt="School Logo" width={'80px'} /> */}
+              <img src="/assets/logobr.png" alt="School Logo" width={'80px'} />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-gray-900">GCC School</h1>
+              <h1 className="text-xl font-bold text-gray-900">AL-MAWHIBA SCHOOL</h1>
               <p className="text-sm text-gray-600" dir="rtl">مدرسة دول مجلس التعاون</p>
             </div>
           </Link>
@@ -67,7 +69,7 @@ const Navigation = ({ onLoginClick }: NavigationProps) => {
               {language === 'en' ? 'عربي' : 'English'}
             </Button>
             <Button 
-              onClick={onLoginClick}
+              onClick={handleLogin}
               className="bg-blue-600 hover:bg-blue-700 text-white"
             >
               Login | دخول
@@ -114,10 +116,7 @@ const Navigation = ({ onLoginClick }: NavigationProps) => {
                   {language === 'en' ? 'عربي' : 'English'}
                 </Button>
                 <Button 
-                  onClick={() => {
-                    onLoginClick();
-                    setIsMenuOpen(false);
-                  }}
+                  onClick={handleLogin}
                   className="bg-blue-600 hover:bg-blue-700 text-white"
                 >
                   Login | دخول

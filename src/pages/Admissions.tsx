@@ -83,7 +83,7 @@ const Admissions = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-gold-50">
-      <Navigation onLoginClick={() => setIsLoginOpen(true)} />
+      <Navigation  />
       
       {/* Hero Section */}
       <section className="pt-32 pb-20 px-4">
@@ -222,10 +222,7 @@ const Admissions = () => {
         </div>
       </section>
 
-      <LoginModal 
-        isOpen={isLoginOpen} 
-        onClose={() => setIsLoginOpen(false)} 
-      />
+  
     </div>
   );
 };

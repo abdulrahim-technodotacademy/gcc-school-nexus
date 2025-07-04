@@ -15,6 +15,7 @@ import Accountant from "./pages/dashboard/Accountant";
 import StudentList from "./pages/dashboard/StudentList";
 import Admin from "./pages/dashboard/Admin";
 import NotFound from "./pages/NotFound";
+import LoginModal from "./components/auth/LoginModal";
 
 const queryClient = new QueryClient();
 
@@ -35,6 +36,7 @@ const App = () => (
           <Route path="/dashboard/accountant" element={<Accountant />} />
           <Route path="/dashboard/student-list" element={<StudentList />} />
           <Route path="/dashboard/admin" element={<Admin />} />
+          <Route path="/admin/login" element={<LoginModal />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

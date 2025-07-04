@@ -41,7 +41,7 @@ const About = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-gold-50">
-      <Navigation onLoginClick={() => setIsLoginOpen(true)} />
+      <Navigation />
       
       {/* Hero Section */}
       <section className="pt-32 pb-20 px-4">
@@ -51,7 +51,7 @@ const About = () => {
             <span className="block text-blue-600 mt-2" dir="rtl">عن مدرستنا</span>
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-            GCC School has been a beacon of educational excellence for over two decades, 
+            AL-MAWHIBA School has been a beacon of educational excellence for over two decades, 
             committed to nurturing young minds through a blend of modern pedagogy and traditional values.
           </p>
           <p className="text-lg text-gray-500 mt-4 max-w-3xl mx-auto" dir="rtl">
@@ -124,10 +124,7 @@ const About = () => {
         </div>
       </section>
 
-      <LoginModal 
-        isOpen={isLoginOpen} 
-        onClose={() => setIsLoginOpen(false)} 
-      />
+   
     </div>
   );
 };
