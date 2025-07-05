@@ -10,10 +10,8 @@ import Navigation from "@/components/layout/Navigation";
 
 const userRoles = [
   { value: 'registration', label: 'Registration Staff', labelAr: 'موظف التسجيل' },
-  { value: 'financial', label: 'Financial Agreement Staff', labelAr: 'موظف الاتفاقية المالية' },
-  { value: 'accountant', label: 'Accountant Staff', labelAr: 'موظف المحاسبة' },
   { value: 'student-list', label: 'Student List Staff', labelAr: 'موظف قوائم الطلاب' },
-  { value: 'account-admin', label: 'Account Admin', labelAr: 'مدير الحسابات' }
+  { value: 'Addmission', label: 'Admission student', labelAr: 'مدير الحسابات' }
 ];
 
 const LoginPage = () => {
@@ -23,6 +21,16 @@ const LoginPage = () => {
     username: '',
     password: ''
   });
+
+  const handleRoleClick = (role: string) => {
+    if (role === 'Addmission') {
+      // Directly navigate for Admission role
+      navigate('/student/addmission');
+    } else {
+      // Show modal for other roles
+      setActiveRole(role);
+    }
+  };
 
   const handleLogin = (e: React.FormEvent, role: string) => {
     e.preventDefault();
@@ -37,10 +45,8 @@ const LoginPage = () => {
     
     const dashboardRoutes = {
       'registration': '/dashboard/registration',
-      'financial': '/dashboard/financial',
-      'accountant': '/dashboard/accountant', 
       'student-list': '/dashboard/student-list',
-      'account-admin': '/dashboard/admin'
+      'Addmission': '/student/addmission',
     };
     
     setTimeout(() => {
@@ -57,8 +63,7 @@ const LoginPage = () => {
         <div className="container mx-auto px-4 py-8 md:py-12">
           <div className="flex flex-col items-center mb-8 pt-4">
             <div className="bg-gradient-to-br mb-4 mt-6">
-                   {/* <img src="/assets/logo.png" alt="School Logo" width={'80px'} /> */}
-                   <img src="/assets/logobr.png" alt="School Logo" width={'80px'} />
+              <img src="/assets/logobr.png" alt="School Logo" width={'80px'} />
             </div>
             <h1 className="text-3xl font-bold text-center">
               School Management Portal
@@ -74,7 +79,7 @@ const LoginPage = () => {
                 key={role.value}
                 variant="outline"
                 className="h-24 flex flex-col items-center justify-center gap-2"
-                onClick={() => setActiveRole(role.value)}
+                onClick={() => handleRoleClick(role.value)}
               >
                 <Building className="h-6 w-6" />
                 <div>
@@ -91,8 +96,8 @@ const LoginPage = () => {
           </div>
         </div>
 
-        {/* Modal for login form */}
-        {activeRole && (
+        {/* Modal for login form - won't show for Admission role */}
+        {activeRole && activeRole !== 'Addmission' && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
             <Card className="w-full max-w-md relative">
               <Button 
@@ -145,7 +150,7 @@ const LoginPage = () => {
                   </div>
 
                   <Button 
-                  style={{backgroundColor:'rgb(102,42,20)'}}
+                    style={{backgroundColor:'rgb(102,42,20)'}}
                     type="submit" 
                     className="w-full h-12 text-white text-lg"
                   >

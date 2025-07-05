@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { UserPlus, Upload, Save } from "lucide-react";
 import { toast } from "sonner";
+import Navigation from "../layout/Navigation";
 
 const NewStudentRegistrationForm = () => {
   const [formData, setFormData] = useState({
@@ -100,7 +101,9 @@ const NewStudentRegistrationForm = () => {
   };
 
   return (
-    <Card>
+    <>
+    <Navigation/>
+    <Card className="max-w-3xl mx-auto mt-20 p-6 bg-white shadow-lg">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <UserPlus className="h-5 w-5" />
@@ -374,6 +377,7 @@ const NewStudentRegistrationForm = () => {
         </form>
       </CardContent>
     </Card>
+    </>
   );
 };
 

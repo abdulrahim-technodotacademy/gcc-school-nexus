@@ -11,10 +11,7 @@ const Navigation = () => {
 
   const navItems = [
     { label: 'Home', labelAr: 'الرئيسية', href: '/' },
-    { label: 'About', labelAr: 'عن المدرسة', href: '/about' },
-    { label: 'Academics', labelAr: 'الأكاديميات', href: '/academics' },
-    { label: 'Admissions', labelAr: 'القبول', href: '/admissions' },
-    { label: 'Contact', labelAr: 'اتصل بنا', href: '/contact' },
+
   ];
 
   const isActive = (href: string) => location.pathname === href;
