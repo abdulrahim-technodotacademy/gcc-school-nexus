@@ -11,7 +11,7 @@ import Navigation from "@/components/layout/Navigation";
 const userRoles = [
   { value: 'registration', label: 'Registration Staff', labelAr: 'موظف التسجيل' },
   { value: 'student-list', label: 'Student List Staff', labelAr: 'موظف قوائم الطلاب' },
-  { value: 'Addmission', label: 'Admission student', labelAr: 'مدير الحسابات' }
+  { value: 'Addmission', label: 'Admission student', labelAr: 'طالب القبول' }
 ];
 
 const LoginPage = () => {

@@ -5,20 +5,16 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 
 const Navigation = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [language, setLanguage] = useState<'en' | 'ar'>('en');
+  const [language, setLanguage] = useState<"en" | "ar">("en");
   const location = useLocation();
   const navigate = useNavigate();
 
-  const navItems = [
-    { label: 'Home', labelAr: 'الرئيسية', href: '/' },
-
-  ];
+  const navItems = [{ label: "Home", labelAr: "الرئيسية", href: "/" }];
 
   const isActive = (href: string) => location.pathname === href;
 
   const handleLogin = () => {
-  
-    navigate('/admin/login');
+    navigate("/admin/login");
   };
 
   return (
@@ -29,11 +25,15 @@ const Navigation = () => {
           <Link to="/" className="flex items-center space-x-3">
             <div className=" p-2 rounded-lg">
               {/* <img src="/assets/logo.png" alt="School Logo" width={'80px'} /> */}
-              <img src="/assets/logobr.png" alt="School Logo" width={'80px'} />
+              <img src="/assets/logobr.png" alt="School Logo" width={"80px"} />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-gray-900">AL-MAWHIBA PRIVATE SCHOOL</h1>
-              <p className="text-sm text-gray-600" dir="rtl">مدرسة دول مجلس التعاون</p>
+              <h1 className="text-base sm:text-xl font-bold text-gray-900">
+                AL-MAWHIBA PRIVATE SCHOOL
+              </h1>
+              <p className="text-xs sm:text-sm text-gray-600" dir="rtl">
+                مدرسة دول مجلس التعاون
+              </p>
             </div>
           </Link>
 
@@ -43,14 +43,18 @@ const Navigation = () => {
               <Link
                 key={item.href}
                 to={item.href}
-                style={{borderBottom: isActive(item.href) ? '2px solid rgb(102,42,20)' : 'none'}}
+                style={{
+                  borderBottom: isActive(item.href)
+                    ? "2px solid rgb(102,42,20)"
+                    : "none",
+                }}
                 className={`transition-colors duration-200 font-medium ${
-                  isActive(item.href) 
-                    ? 'text-[rgb(102,42,20)] border-b-2  pb-1' 
-                    : 'text-gray-700 hover:text-[rgb(102,42,20)]'
+                  isActive(item.href)
+                    ? "text-[rgb(102,42,20)] border-b-2  pb-1"
+                    : "text-gray-700 hover:text-[rgb(102,42,20)]"
                 }`}
               >
-                {language === 'en' ? item.label : item.labelAr}
+                {language === "en" ? item.label : item.labelAr}
               </Link>
             ))}
           </div>
@@ -60,16 +64,16 @@ const Navigation = () => {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setLanguage(language === 'en' ? 'ar' : 'en')}
+              onClick={() => setLanguage(language === "en" ? "ar" : "en")}
               className="text-gray-600 hover:text-[rgb(102,42,20)]"
             >
               <Globe className="h-4 w-4 mr-1" />
-              {language === 'en' ? 'عربي' : 'English'}
+              {language === "en" ? "عربي" : "English"}
             </Button>
-            <Button 
-  onClick={handleLogin}
-  className="bg-[#79361C] hover:bg-[#662A14] text-white"
->
+            <Button
+              onClick={handleLogin}
+              className="bg-[#79361C] hover:bg-[#662A14] text-white"
+            >
               Login | دخول
             </Button>
           </div>
@@ -93,28 +97,30 @@ const Navigation = () => {
             <div className="flex flex-col space-y-4 pt-4">
               {navItems.map((item) => (
                 <Link
-                 style={{backgroundColor:'rgb(102,42,20)'}}
+                  style={{ backgroundColor: "rgb(102,42,20)" }}
                   key={item.href}
                   to={item.href}
                   className={`transition-colors duration-200 font-medium px-2 py-1 ${
-                    isActive(item.href) ? 'text-[rgb(102,42,20)]' : 'text-gray-700 hover:text-[rgb(102,42,20)]'
+                    isActive(item.href)
+                      ? "text-[rgb(102,42,20)]"
+                      : "text-gray-700 hover:text-[rgb(102,42,20)]"
                   }`}
                   onClick={() => setIsMenuOpen(false)}
                 >
-                  {language === 'en' ? item.label : item.labelAr}
+                  {language === "en" ? item.label : item.labelAr}
                 </Link>
               ))}
               <div className="flex items-center justify-between pt-4 border-t border-gray-200">
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => setLanguage(language === 'en' ? 'ar' : 'en')}
+                  onClick={() => setLanguage(language === "en" ? "ar" : "en")}
                   className="text-gray-600 hover:text-[rgb(102,42,20)]"
                 >
                   <Globe className="h-4 w-4 mr-1" />
-                  {language === 'en' ? 'عربي' : 'English'}
+                  {language === "en" ? "عربي" : "English"}
                 </Button>
-                <Button 
+                <Button
                   onClick={handleLogin}
                   className="text-[rgb(102,42,20)] hover:bg-blue-700 text-white"
                 >
