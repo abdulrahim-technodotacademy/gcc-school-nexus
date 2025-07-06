@@ -9,46 +9,80 @@ import { toast } from "sonner";
 import Navigation from "@/components/layout/Navigation";
 
 const userRoles = [
-  { value: 'registration', label: 'Registration Staff', labelAr: 'موظف التسجيل' },
-  { value: 'student-list', label: 'Student List Staff', labelAr: 'موظف قوائم الطلاب' },
-  { value: 'Addmission', label: 'Admission student', labelAr: 'طالب القبول' }
+  {
+    value: "registration-Admin",
+    label: "Registration Admin",
+    labelAr: "مدير التسجيل",
+  },
+  {
+    value: "student-list",
+    label: "Student List Admin",
+    labelAr: "مدير قائمة الطلاب",
+  },
+  { 
+    value: "School-admin", 
+    label: "School Admin", 
+    labelAr: "مدير المدرسة" 
+  },
+  {
+    value: "financial-Admin",
+    label: "Financial Admin",
+    labelAr: "مدير الشؤون المالية",
+  },
+  { 
+    value: "accountant-Admin", 
+    label: "Accountant Admin", 
+    labelAr: "مدير المحاسبة" 
+  },
 ];
 
 const LoginPage = () => {
   const navigate = useNavigate();
   const [activeRole, setActiveRole] = useState<string | null>(null);
   const [credentials, setCredentials] = useState({
-    username: '',
-    password: ''
+    username: "",
+    password: "",
   });
 
-  const handleRoleClick = (role: string) => {
-    if (role === 'Addmission') {
-      // Directly navigate for Admission role
-      navigate('/student/addmission');
+ const handleRoleClick = (role: string) => {
+  if (role === "Addmission") {
+    navigate("/student/addmission");
+  } else {
+    setActiveRole(role);
+    // Auto-fill test credentials for specific roles
+    if (role === "School-admin" || role === "financial-Admin" || role === "accountant-Admin") {
+      setCredentials({
+        username: "test",
+        password: "test",
+      });
     } else {
-      // Show modal for other roles
-      setActiveRole(role);
+      // Reset for other roles
+      setCredentials({
+        username: "",
+        password: "",
+      });
     }
-  };
-
+  }
+};
   const handleLogin = (e: React.FormEvent, role: string) => {
     e.preventDefault();
-    
+
     if (!credentials.username || !credentials.password) {
       toast.error("Please fill in all fields");
       return;
     }
 
-    console.log('Login attempt:', { ...credentials, role });
+    console.log("Login attempt:", { ...credentials, role });
     toast.success(`Welcome! Logging in as ${role}`);
-    
+
     const dashboardRoutes = {
-      'registration': '/dashboard/registration',
-      'student-list': '/dashboard/student-list',
-      'Addmission': '/student/addmission',
+      "registration": "/dashboard/registration",
+      "student-list": "/dashboard/student-list",
+     "School-admin": "/dashboard/admin",   // School Admin dashboard
+  "financial-Admin": "/dashboard/financial", // Financial admin
+  "accountant-Admin": "/dashboard/accountant", // Accountant
     };
-    
+
     setTimeout(() => {
       navigate(dashboardRoutes[role as keyof typeof dashboardRoutes]);
       setActiveRole(null); // Close modal after navigation
@@ -58,12 +92,12 @@ const LoginPage = () => {
   return (
     <div className="flex flex-col min-h-screen">
       <Navigation />
-      
+
       <main className="flex-1 bg-gray-50">
         <div className="container mx-auto px-4 py-8 md:py-12">
           <div className="flex flex-col items-center mb-8 pt-4">
             <div className="bg-gradient-to-br mb-4 mt-6">
-              <img src="/assets/logobr.png" alt="School Logo" width={'80px'} />
+              <img src="/assets/logobr.png" alt="School Logo" width={"80px"} />
             </div>
             <h1 className="text-3xl font-bold text-center">
               School Management Portal
@@ -84,7 +118,9 @@ const LoginPage = () => {
                 <Building className="h-6 w-6" />
                 <div>
                   <div>{role.label}</div>
-                  <div className="text-sm" dir="rtl">{role.labelAr}</div>
+                  <div className="text-sm" dir="rtl">
+                    {role.labelAr}
+                  </div>
                 </div>
               </Button>
             ))}
@@ -97,30 +133,36 @@ const LoginPage = () => {
         </div>
 
         {/* Modal for login form - won't show for Admission role */}
-        {activeRole && activeRole !== 'Addmission' && (
+        {activeRole && activeRole !== "Addmission" && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
             <Card className="w-full max-w-md relative">
-              <Button 
-                variant="ghost" 
-                size="sm" 
+              <Button
+                variant="ghost"
+                size="sm"
                 className="absolute top-2 right-2 p-1 h-8 w-8"
                 onClick={() => setActiveRole(null)}
                 aria-label="Close modal"
               >
                 <X className="h-4 w-4" />
               </Button>
-              
+
               <CardContent className="p-6 pt-10">
                 <div className="flex items-center gap-2 mb-4">
                   <Building className="h-5 w-5" />
                   <h2 className="text-xl font-semibold">
-                    {userRoles.find(r => r.value === activeRole)?.label}
+                    {userRoles.find((r) => r.value === activeRole)?.label}
                   </h2>
                 </div>
-                
-                <form onSubmit={(e) => handleLogin(e, activeRole)} className="space-y-4">
+
+                <form
+                  onSubmit={(e) => handleLogin(e, activeRole)}
+                  className="space-y-4"
+                >
                   <div className="space-y-2">
-                    <Label htmlFor="username" className="flex items-center gap-2">
+                    <Label
+                      htmlFor="username"
+                      className="flex items-center gap-2"
+                    >
                       <User className="h-4 w-4" />
                       Username | اسم المستخدم
                     </Label>
@@ -129,13 +171,21 @@ const LoginPage = () => {
                       type="text"
                       placeholder="Enter username"
                       value={credentials.username}
-                      onChange={(e) => setCredentials({...credentials, username: e.target.value})}
+                      onChange={(e) =>
+                        setCredentials({
+                          ...credentials,
+                          username: e.target.value,
+                        })
+                      }
                       className="h-12"
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="password" className="flex items-center gap-2">
+                    <Label
+                      htmlFor="password"
+                      className="flex items-center gap-2"
+                    >
                       <Lock className="h-4 w-4" />
                       Password | كلمة المرور
                     </Label>
@@ -144,14 +194,19 @@ const LoginPage = () => {
                       type="password"
                       placeholder="Enter password"
                       value={credentials.password}
-                      onChange={(e) => setCredentials({...credentials, password: e.target.value})}
+                      onChange={(e) =>
+                        setCredentials({
+                          ...credentials,
+                          password: e.target.value,
+                        })
+                      }
                       className="h-12"
                     />
                   </div>
 
-                  <Button 
-                    style={{backgroundColor:'rgb(102,42,20)'}}
-                    type="submit" 
+                  <Button
+                    style={{ backgroundColor: "rgb(102,42,20)" }}
+                    type="submit"
                     className="w-full h-12 text-white text-lg"
                   >
                     Login | دخول

@@ -76,20 +76,21 @@ const Index = () => {
             <div className="flex flex-col sm:flex-row gap-4 justify-center w-full">
               <Button
                 size="lg"
-                style={{backgroundColor: 'rgb(102,42,20)'}}
+                style={{ backgroundColor: "rgb(102,42,20)" }}
                 className="text-white px-6 sm:px-8 py-4 text-lg w-full sm:w-auto"
                 onClick={() => (window.location.href = "/admin/login")}
               >
                 <GraduationCap className="mr-2 h-5 w-5" />
-                Access Portal | دخول النظام
+                Access ERP Portal | دخول النظام
               </Button>
               <Button
                 size="lg"
                 variant="outline"
                 className="border-blue-600 text-[rgb(102,42,20)] hover:bg-blue-50 px-6 sm:px-8 py-4 text-lg w-full sm:w-auto"
+                 onClick={() => (window.location.href = "/student/addmission")}
               >
                 <Globe className="mr-2 h-5 w-5" />
-                Learn More | اعرف المزيد
+                New Admission | اعرف المزيد
               </Button>
             </div>
           </div>
