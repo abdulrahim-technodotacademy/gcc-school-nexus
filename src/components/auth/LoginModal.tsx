@@ -10,7 +10,7 @@ import Navigation from "@/components/layout/Navigation";
 
 const userRoles = [
   {
-    value: "registration-Admin",
+    value: "registration",
     label: "Registration Admin",
     labelAr: "مدير التسجيل",
   },
@@ -79,8 +79,8 @@ const LoginPage = () => {
       "registration": "/dashboard/registration",
       "student-list": "/dashboard/student-list",
      "School-admin": "/dashboard/admin",   // School Admin dashboard
-  "financial-Admin": "/dashboard/financial", // Financial admin
-  "accountant-Admin": "/dashboard/accountant", // Accountant
+     "financial-Admin": "/dashboard/financial", // Financial admin
+     "accountant-Admin": "/dashboard/accountant", // Accountant
     };
 
     setTimeout(() => {
