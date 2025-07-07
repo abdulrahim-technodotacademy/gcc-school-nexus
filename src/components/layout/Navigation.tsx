@@ -97,7 +97,7 @@ const Navigation = () => {
             <div className="flex flex-col space-y-4 pt-4">
               {navItems.map((item) => (
                 <Link
-                  style={{ backgroundColor: "rgb(102,42,20)" }}
+                  style={{ backgroundColor: "rgb(102,42,20)", color: "white"   }}
                   key={item.href}
                   to={item.href}
                   className={`transition-colors duration-200 font-medium px-2 py-1 ${
