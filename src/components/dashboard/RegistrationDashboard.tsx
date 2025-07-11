@@ -42,8 +42,8 @@ const RegistrationDashboard = () => {
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Registration Department</h1>
-          <p className="text-gray-600" dir="rtl">قسم التسجيل</p>
+          <h1 className="text-3xl font-bold text-gray-900">Registration Officer</h1>
+          <p className="text-gray-600" dir="rtl">موظف تسجيل</p>
         </div>
         <Button className="bg-blue-600 hover:bg-blue-700" onClick={handleNewRegistration}>
           <UserPlus className="mr-2 h-4 w-4" />

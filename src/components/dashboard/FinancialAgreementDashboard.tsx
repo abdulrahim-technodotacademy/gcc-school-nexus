@@ -52,8 +52,8 @@ const FinancialAgreementDashboard = () => {
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Financial Agreement Department</h1>
-          <p className="text-gray-600" dir="rtl">قسم الاتفاقية المالية</p>
+          <h1 className="text-3xl font-bold text-gray-900">Financial Agreement Officer</h1>
+          <p className="text-gray-600" dir="rtl">موظف العقود المالية</p>
         </div>
         <Button className="bg-green-600 hover:bg-green-700">
           <FileText className="mr-2 h-4 w-4" />
@@ -126,7 +126,7 @@ const FinancialAgreementDashboard = () => {
                     </SelectContent>
                   </Select>
                 </div>
-                <div>
+                {/* <div>
                   <Label>Course | المسار</Label>
                   <Select value={selectedCourse} onValueChange={setSelectedCourse}>
                     <SelectTrigger>
@@ -138,7 +138,7 @@ const FinancialAgreementDashboard = () => {
                       ))}
                     </SelectContent>
                   </Select>
-                </div>
+                </div> */}
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

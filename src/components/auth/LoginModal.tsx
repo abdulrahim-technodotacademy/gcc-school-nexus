@@ -11,29 +11,30 @@ import Navigation from "@/components/layout/Navigation";
 const userRoles = [
   {
     value: "registration",
-    label: "Registration Admin",
-    labelAr: "مدير التسجيل",
+    label: "Registration Officer",
+    labelAr: "موظف تسجيل",
   },
-  {
-    value: "student-list",
-    label: "Student List Admin",
-    labelAr: "مدير قائمة الطلاب",
-  },
-  { 
-    value: "School-admin", 
-    label: "School Admin", 
-    labelAr: "مدير المدرسة" 
-  },
-  {
+    {
     value: "financial-Admin",
-    label: "Financial Admin",
-    labelAr: "مدير الشؤون المالية",
+    label: "Financial Agreement Officer",
+    labelAr: "موظف العقود المالية",
+  },
+    { 
+    value: "School-admin", 
+    label: "Accountant", 
+    labelAr: "محاسب"
   },
   { 
     value: "accountant-Admin", 
-    label: "Accountant Admin", 
-    labelAr: "مدير المحاسبة" 
+    label: "Accountant Controlor", 
+    labelAr: "مراقب مالي" 
   },
+    {
+    value: "student-list",
+    label: "Student List",
+    labelAr: "قوائم الطلاب",
+  },
+  
 ];
 
 const LoginPage = () => {

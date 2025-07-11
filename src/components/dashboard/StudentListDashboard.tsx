@@ -75,8 +75,8 @@ const StudentListDashboard = () => {
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Student List Management</h1>
-          <p className="text-gray-600" dir="rtl">إدارة قوائم الطلاب</p>
+          <h1 className="text-3xl font-bold text-gray-900">Student List </h1>
+          <p className="text-gray-600" dir="rtl">قوائم الطلاب</p>
         </div>
         <Button className="bg-indigo-600 hover:bg-indigo-700">
           <Download className="mr-2 h-4 w-4" />

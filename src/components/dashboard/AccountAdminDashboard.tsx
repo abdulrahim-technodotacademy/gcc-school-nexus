@@ -53,8 +53,8 @@ const AccountAdminDashboard = () => {
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Account Admin Dashboard</h1>
-          <p className="text-gray-600" dir="rtl">لوحة تحكم مدير الحسابات</p>
+          <h1 className="text-3xl font-bold ">Accountant</h1>
+          <p className="text-gray-600" dir="rtl">محاسب</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline">

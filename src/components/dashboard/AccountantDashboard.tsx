@@ -64,8 +64,8 @@ const AccountantDashboard = () => {
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Accountant Department</h1>
-          <p className="text-gray-600" dir="rtl">قسم المحاسبة</p>
+          <h1 className="text-3xl font-bold text-gray-900">Accountant Controlor</h1>
+          <p className="text-gray-600" dir="rtl">مراقب مالي</p>
         </div>
         <Button className="bg-purple-600 hover:bg-purple-700">
           <Receipt className="mr-2 h-4 w-4" />
