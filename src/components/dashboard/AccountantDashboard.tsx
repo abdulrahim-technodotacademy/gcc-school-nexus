@@ -113,8 +113,8 @@ const AccountantDashboard = () => {
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Accountant Controlor</h1>
-          <p className="text-gray-600" dir="rtl">مراقب مالي</p>
+          <h1 className="text-3xl font-bold text-gray-900">Accountant Controller</h1>
+          <p className="text-gray-600" dir="rtl">ممراقب الحسابات</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline">

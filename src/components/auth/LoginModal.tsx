@@ -26,7 +26,7 @@ const userRoles = [
   },
   { 
     value: "accountant-Admin", 
-    label: "Accountant Controlor", 
+    label: "Accountant Controller", 
     labelAr: "مراقب مالي" 
   },
     {

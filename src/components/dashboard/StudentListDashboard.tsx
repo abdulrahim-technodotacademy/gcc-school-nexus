@@ -74,33 +74,11 @@ const StudentListDashboard = () => {
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Student List </h1>
-          <p className="text-gray-600" dir="rtl">قوائم الطلاب</p>
-        </div>
-        <Button className="bg-indigo-600 hover:bg-indigo-700">
-          <Download className="mr-2 h-4 w-4" />
-          Export List | تصدير القائمة
-        </Button>
+
+     
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {stats.map((stat, index) => (
-          <Card key={index} className="hover:shadow-lg transition-shadow">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">{stat.title}</p>
-                  <p className="text-xs text-gray-500 mt-1" dir="rtl">{stat.titleAr}</p>
-                  <p className="text-3xl font-bold text-indigo-600 mt-2">{stat.value}</p>
-                </div>
-                <stat.icon className="h-12 w-12 text-indigo-600 opacity-80" />
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+
 
       {/* Search and Filter Section */}
       <Card>

@@ -87,7 +87,7 @@ const Index = () => {
                 size="lg"
                 variant="outline"
                 className="border-blue-600 text-[rgb(102,42,20)] hover:bg-blue-50 px-6 sm:px-8 py-4 text-lg w-full sm:w-auto"
-                 onClick={() => (window.location.href = "/student/addmission")}
+                 onClick={() => (window.location.href = "/student/newregisterforpublic")}
               >
                 <Globe className="mr-2 h-5 w-5" />
                 New Admission | اعرف المزيد

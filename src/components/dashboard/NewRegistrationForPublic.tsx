@@ -9,9 +9,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { UserPlus, Upload, Save } from "lucide-react";
 import { toast } from "sonner";
 import Navigation from "../layout/Navigation";
-
-const NewStudentRegistrationForm = () => {
-  const [formData, setFormData] = useState({
+function NewRegistrationForPublic() {
+ const [formData, setFormData] = useState({
     // Personal Information
     studentNameEn: '',
     studentNameAr: '',
@@ -102,7 +101,7 @@ const NewStudentRegistrationForm = () => {
 
   return (
     <>
-    {/* <Navigation/> */}
+  <Navigation/>
     <Card className="max-w-3xl mx-auto mt-20 p-6 bg-white shadow-lg">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
@@ -379,6 +378,6 @@ const NewStudentRegistrationForm = () => {
     </Card>
     </>
   );
-};
+}
 
-export default NewStudentRegistrationForm;
+export default NewRegistrationForPublic

@@ -17,6 +17,7 @@ import Admin from "./pages/dashboard/Admin";
 import NotFound from "./pages/NotFound";
 import LoginModal from "./components/auth/LoginModal";
 import NewStudentRegistrationForm from "./components/dashboard/NewStudentRegistrationForm";
+import NewRegistrationForPublic from "./components/dashboard/NewRegistrationForPublic";
 
 const queryClient = new QueryClient();
 
@@ -39,6 +40,8 @@ const App = () => (
           <Route path="/dashboard/admin" element={<Admin />} />
           <Route path="/admin/login" element={<LoginModal />} />
           <Route path="/student/addmission" element={<NewStudentRegistrationForm />} />
+          <Route path="/admin/login" element={<LoginModal />} />
+          <Route path="/student/newregisterforpublic" element={<NewRegistrationForPublic />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
           
