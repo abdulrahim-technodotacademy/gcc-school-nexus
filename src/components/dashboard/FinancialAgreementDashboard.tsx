@@ -415,7 +415,7 @@ const calculateTotal = () => {
                     <p>Total Fees: {student.fees.total}</p>
                     <Button className="bg-orange-600 hover:bg-orange-700 mt-2">
                       <PenTool className="mr-2 h-4 w-4" />
-                      Send Reminder | إرسال تذكير
+                      Signatures | توقيعات
                     </Button>
                   </div>
                 ))}
