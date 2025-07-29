@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -18,6 +17,9 @@ import NotFound from "./pages/NotFound";
 import LoginModal from "./components/auth/LoginModal";
 import NewStudentRegistrationForm from "./components/dashboard/NewStudentRegistrationForm";
 import NewRegistrationForPublic from "./components/dashboard/NewRegistrationForPublic";
+import StudentDetailsPage from "./components/dashboard/StudentDetailsPage";
+
+
 
 const queryClient = new QueryClient();
 
@@ -40,7 +42,8 @@ const App = () => (
           <Route path="/dashboard/admin" element={<Admin />} />
           <Route path="/admin/login" element={<LoginModal />} />
           <Route path="/student/addmission" element={<NewStudentRegistrationForm />} />
-          <Route path="/admin/login" element={<LoginModal />} />
+        <Route path="/student/:id" element={<StudentDetailsPage />} />
+ 
           <Route path="/student/newregisterforpublic" element={<NewRegistrationForPublic />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

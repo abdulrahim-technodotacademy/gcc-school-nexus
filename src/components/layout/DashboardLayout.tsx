@@ -54,8 +54,8 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
             className="max-w-[200px] justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
             onClick={handleLogout}
           >
-            <LogOut className="h-4 w-4" />
-            {isSidebarOpen && <span className="ml-2">Logout | خروج</span>}
+            {/* <LogOut className="h-4 w-4" /> */}
+            {/* {isSidebarOpen && <span className="ml-2 " style={{width:'100px'}}>Logout | خروج</span>} */}
           </Button>
         </div>
       </div>

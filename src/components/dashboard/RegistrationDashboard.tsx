@@ -1,54 +1,164 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
-import { Users, UserPlus, FileText, Upload, Search, ChevronUp, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
-import { useState } from "react";
+import {
+  Table,
+  TableHeader,
+  TableRow,
+  TableHead,
+  TableBody,
+  TableCell,
+} from "@/components/ui/table";
+import {
+  Users,
+  UserPlus,
+  FileText,
+  Upload,
+  Search,
+  ChevronUp,
+  Loader2,
+  CheckCircle2,
+  AlertCircle,
+} from "lucide-react";
+import { useState, useEffect } from "react";
 import NewStudentRegistrationForm from "./NewStudentRegistrationForm";
 
 type Student = {
   id: string;
-  name: string;
+  name_en: string;
+  name_ar: string;
+  date_of_birth: string;
+  gender: string;
+  nationality: string;
+  place_of_birth: string;
+  religion: string;
   currentClass: string;
   nextClass: string;
-  status: 'pending' | 'verified' | 'rejected';
+  status: "pending" | "verified" | "rejected";
   registrationDate: string;
+  isNewRegistration?: boolean;
+  guardian?: {
+    name_en: string;
+    name_ar: string;
+    phone: string;
+    relationship: string;
+    national_id: string;
+  };
+  documents?: Array<{
+    type: string;
+    file: string;
+  }>;
 };
+// eslint-disable-next-line react-hooks/rules-of-hooks
+
 
 const RegistrationDashboard = () => {
-  const [activeTab, setActiveTab] = useState<'search' | 'new' | 'promotion'>('new');
-  const [selectedClass, setSelectedClass] = useState<string>('');
+  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState<"search" | "new" | "promotion">(
+    "new"
+  );
+  const [selectedClass, setSelectedClass] = useState<string>("");
   const [students, setStudents] = useState<Student[]>([]);
-  const [selectedStudents, setSelectedStudents] = useState<Record<string, boolean>>({});
+  const [selectedStudents, setSelectedStudents] = useState<
+    Record<string, boolean>
+  >({});
   const [loading, setLoading] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [verificationStatus, setVerificationStatus] = useState<'all' | 'pending' | 'verified'>('all');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [verificationStatus, setVerificationStatus] = useState<
+    "all" | "pending" | "verified"
+  >("all");
 
   // Mock data - replace with API calls
-  const classOptions = ['Grade 1', 'Grade 2', 'Grade 3', 'Grade 4', 'Grade 5', 'Grade 6'];
+  const classOptions = [
+    "Grade 1",
+    "Grade 2",
+    "Grade 3",
+    "Grade 4",
+    "Grade 5",
+    "Grade 6",
+  ];
   const mockStudents: Student[] = [
-    { id: '1', name: 'Ahmed Mohamed', currentClass: 'Grade 1', nextClass: 'Grade 2', status: 'verified', registrationDate: '2023-05-15' },
-    { id: '2', name: 'Fatima Ali', currentClass: 'Grade 1', nextClass: 'Grade 2', status: 'pending', registrationDate: '2023-06-20' },
-    { id: '3', name: 'Youssef Hassan', currentClass: 'Grade 2', nextClass: 'Grade 3', status: 'verified', registrationDate: '2023-04-10' },
-    { id: '4', name: 'Mariam Abdullah', currentClass: 'Grade 2', nextClass: 'Grade 3', status: 'pending', registrationDate: '2023-06-18' },
-    { id: '5', name: 'Khalid Omar', currentClass: 'Grade 3', nextClass: 'Grade 4', status: 'rejected', registrationDate: '2023-03-05' },
+    {
+      id: "1",
+      name_en: "Ahmed Mohamed",
+      name_ar: "أحمد محمد",
+      date_of_birth: "2015-03-10",
+      gender: "MALE",
+      nationality: "Egyptian",
+      place_of_birth: "Cairo",
+      religion: "Muslim",
+      currentClass: "Grade 1",
+      nextClass: "Grade 2",
+      status: "verified",
+      registrationDate: "2023-05-15",
+    },
+    {
+      id: "2",
+      name_en: "Fatima Ali",
+      name_ar: "فاطمة علي",
+      date_of_birth: "2016-01-15",
+      gender: "FEMALE",
+      nationality: "Egyptian",
+      place_of_birth: "Alexandria",
+      religion: "Muslim",
+      currentClass: "Grade 1",
+      nextClass: "Grade 2",
+      status: "pending",
+      registrationDate: "2023-06-20",
+    },
   ];
 
-  // Load students based on active tab
+  // Load students from localStorage and mock data
   const loadStudents = () => {
     setLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      setStudents(mockStudents);
-      setLoading(false);
-    }, 500);
+
+    // Get registrations from localStorage
+    const storedRegistrations = localStorage.getItem("studentRegistrations");
+    const localStorageStudents: Student[] = storedRegistrations
+      ? JSON.parse(storedRegistrations).map((reg: any, index: number) => ({
+          id: `local-${index}`,
+          name_en: reg.student.name_en,
+          name_ar: reg.student.name_ar,
+          date_of_birth: reg.student.date_of_birth,
+          gender: reg.student.gender,
+          nationality: reg.student.nationality,
+          place_of_birth: reg.student.place_of_birth,
+          religion: reg.student.religion,
+          currentClass: "Grade 1", // Default or get from form
+          nextClass: "Grade 2",
+          status: "pending",
+          registrationDate: new Date().toISOString().split("T")[0],
+          isNewRegistration: true,
+          guardian: reg.guardian,
+          documents: reg.documents,
+        }))
+      : [];
+
+    // Combine with mock data, putting localStorage students first
+    const allStudents = [...localStorageStudents, ...mockStudents];
+
+    setStudents(allStudents);
+    setLoading(false);
   };
+
+  useEffect(() => {
+    if (activeTab === "search" || activeTab === "promotion") {
+      loadStudents();
+    }
+  }, [activeTab]);
 
   const handleClassChange = (classValue: string) => {
     setSelectedClass(classValue);
-    const filteredStudents = mockStudents.filter(
-      student => student.currentClass === classValue
+    const filteredStudents = students.filter(
+      (student) => student.currentClass === classValue
     );
     setStudents(filteredStudents);
     setSelectedStudents({});
@@ -56,10 +166,23 @@ const RegistrationDashboard = () => {
 
   const verifyStudent = (studentId: string) => {
     setLoading(true);
+
     setTimeout(() => {
-      setStudents(students.map(student => 
-        student.id === studentId ? { ...student, status: 'verified' } : student
-      ));
+      setStudents(
+        students.map((student) => {
+          if (student.id === studentId) {
+            // If it's a localStorage student, you might want to move it to your database
+            if (student.isNewRegistration) {
+              console.log("Moving student to database:", student);
+              // Here you would typically make an API call to your backend
+              // After successful API call, remove from localStorage
+              clearVerifiedRegistrations();
+            }
+            return { ...student, status: "verified" };
+          }
+          return student;
+        })
+      );
       setLoading(false);
     }, 300);
   };
@@ -67,19 +190,46 @@ const RegistrationDashboard = () => {
   const rejectStudent = (studentId: string) => {
     setLoading(true);
     setTimeout(() => {
-      setStudents(students.map(student => 
-        student.id === studentId ? { ...student, status: 'rejected' } : student
-      ));
+      setStudents(
+        students.map((student) =>
+          student.id === studentId
+            ? { ...student, status: "rejected" }
+            : student
+        )
+      );
       setLoading(false);
+      clearVerifiedRegistrations();
     }, 300);
+  };
+
+  const clearVerifiedRegistrations = () => {
+    const storedRegistrations = localStorage.getItem("studentRegistrations");
+    if (storedRegistrations) {
+      const registrations = JSON.parse(storedRegistrations);
+      // Keep only pending registrations
+      const pendingRegistrations = registrations.filter(
+        (reg: any, index: number) => {
+          const studentId = `local-${index}`;
+          const student = students.find((s) => s.id === studentId);
+          return !student || student.status === "pending";
+        }
+      );
+
+      localStorage.setItem(
+        "studentRegistrations",
+        JSON.stringify(pendingRegistrations)
+      );
+    }
   };
 
   const promoteStudents = async () => {
     setLoading(true);
-    const studentIds = Object.keys(selectedStudents).filter(id => selectedStudents[id]);
-    
+    const studentIds = Object.keys(selectedStudents).filter(
+      (id) => selectedStudents[id]
+    );
+
     setTimeout(() => {
-      console.log('Promoting students:', studentIds);
+      console.log("Promoting students:", studentIds);
       setLoading(false);
       setSelectedStudents({});
       alert(`${studentIds.length} students promoted successfully!`);
@@ -87,10 +237,15 @@ const RegistrationDashboard = () => {
     }, 1000);
   };
 
-  const filteredStudents = students.filter(student => {
-    const matchesSearch = student.name.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = verificationStatus === 'all' || student.status === verificationStatus;
-    return matchesSearch && matchesStatus;
+  const filteredStudents = students.filter((student) => {
+    const matchesSearch =
+      student.name_en.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      student.name_ar.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus =
+      verificationStatus === "all" || student.status === verificationStatus;
+    const matchesClass =
+      !selectedClass || student.currentClass === selectedClass;
+    return matchesSearch && matchesStatus && matchesClass;
   });
 
   return (
@@ -98,10 +253,17 @@ const RegistrationDashboard = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Registration Officer</h1>
-          <p className="text-gray-600" dir="rtl">موظف تسجيل</p>
+          <h1 className="text-3xl font-bold text-gray-900">
+            Registration Officer
+          </h1>
+          <p className="text-gray-600" dir="rtl">
+            موظف تسجيل
+          </p>
         </div>
-        <Button className="bg-blue-600 hover:bg-blue-700" onClick={() => setActiveTab('new')}>
+        <Button
+          className="bg-blue-600 hover:bg-blue-700"
+          onClick={() => setActiveTab("new")}
+        >
           <UserPlus className="mr-2 h-4 w-4" />
           New Registration | تسجيل جديد
         </Button>
@@ -110,22 +272,40 @@ const RegistrationDashboard = () => {
       {/* Tabs */}
       <div className="flex space-x-4 border-b">
         <button
-          className={`px-6 py-3 font-medium ${activeTab === 'new' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-600'}`}
-          onClick={() => setActiveTab('new')}
+          className={`px-6 py-3 font-medium ${
+            activeTab === "new"
+              ? "border-b-2 border-blue-600 text-blue-600"
+              : "text-gray-600"
+          }`}
+          onClick={() => setActiveTab("new")}
         >
           <UserPlus className="inline mr-2 h-4 w-4" />
           New Registration | تسجيل جديد
         </button>
         <button
-          className={`px-6 py-3 font-medium ${activeTab === 'search' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-600'}`}
-          onClick={() => { setActiveTab('search'); loadStudents(); }}
+          className={`px-6 py-3 font-medium ${
+            activeTab === "search"
+              ? "border-b-2 border-blue-600 text-blue-600"
+              : "text-gray-600"
+          }`}
+          onClick={() => {
+            setActiveTab("search");
+            loadStudents();
+          }}
         >
           <Search className="inline mr-2 h-4 w-4" />
           Search & Verify | البحث والتحقق
         </button>
         <button
-          className={`px-6 py-3 font-medium ${activeTab === 'promotion' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-600'}`}
-          onClick={() => setActiveTab('promotion')}
+          className={`px-6 py-3 font-medium ${
+            activeTab === "promotion"
+              ? "border-b-2 border-blue-600 text-blue-600"
+              : "text-gray-600"
+          }`}
+          onClick={() => {
+            setActiveTab("promotion");
+            loadStudents();
+          }}
         >
           <Users className="inline mr-2 h-4 w-4" />
           Student Promotion | ترقية الطلاب
@@ -134,13 +314,16 @@ const RegistrationDashboard = () => {
 
       {/* Content */}
       <div className="space-y-6">
-        {activeTab === 'search' && (
+        {activeTab === "search" && (
           <Card>
             <CardHeader>
               <CardTitle className="flex justify-between items-center">
                 <span>Student Verification | التحقق من الطلاب</span>
                 <div className="flex gap-4">
-                  <Select value={verificationStatus} onValueChange={(value: any) => setVerificationStatus(value)}>
+                  <Select
+                    value={verificationStatus}
+                    onValueChange={(value: any) => setVerificationStatus(value)}
+                  >
                     <SelectTrigger className="w-[150px]">
                       <SelectValue placeholder="Filter status" />
                     </SelectTrigger>
@@ -180,38 +363,48 @@ const RegistrationDashboard = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredStudents.map(student => (
+                    {filteredStudents.map((student) => (
                       <TableRow key={student.id}>
-                        <TableCell>{student.name}</TableCell>
+                        <TableCell
+                          className="cursor-pointer hover:underline hover:text-blue-600"
+                          onClick={() => navigate(`/student/${student.id}`)}
+                        >
+                          {student.name_en}
+                          {student.isNewRegistration && (
+                            <span className="ml-2 px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
+                              New
+                            </span>
+                          )}
+                        </TableCell>
                         <TableCell>{student.currentClass}</TableCell>
                         <TableCell>{student.registrationDate}</TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">
-                            {student.status === 'verified' && (
+                            {student.status === "verified" && (
                               <CheckCircle2 className="h-4 w-4 text-green-500" />
                             )}
-                            {student.status === 'pending' && (
+                            {student.status === "pending" && (
                               <Loader2 className="h-4 w-4 animate-spin text-yellow-500" />
                             )}
-                            {student.status === 'rejected' && (
+                            {student.status === "rejected" && (
                               <AlertCircle className="h-4 w-4 text-red-500" />
                             )}
                             <span className="capitalize">{student.status}</span>
                           </div>
                         </TableCell>
                         <TableCell className="text-right space-x-2">
-                          {student.status === 'pending' && (
+                          {student.status === "pending" && (
                             <>
-                              <Button 
-                                variant="outline" 
+                              <Button
+                                variant="outline"
                                 size="sm"
                                 onClick={() => verifyStudent(student.id)}
                                 disabled={loading}
                               >
                                 Verify
                               </Button>
-                              <Button 
-                                variant="outline" 
+                              <Button
+                                variant="outline"
                                 size="sm"
                                 className="text-red-600"
                                 onClick={() => rejectStudent(student.id)}
@@ -236,23 +429,21 @@ const RegistrationDashboard = () => {
           </Card>
         )}
 
-        {activeTab === 'promotion' && (
+        {activeTab === "promotion" && (
           <Card>
             <CardHeader>
               <CardTitle className="flex justify-between items-center">
                 <span>Student Promotion | ترقية الطلاب</span>
-                {selectedClass && (
-                  <div className="relative w-64">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                    <input
-                      type="text"
-                      placeholder="Search students..."
-                      className="pl-10 pr-4 py-2 border rounded-md w-full text-sm"
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                    />
-                  </div>
-                )}
+                <div className="relative w-64">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="Search students..."
+                    className="pl-10 pr-4 py-2 border rounded-md w-full text-sm"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
+                </div>
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -262,15 +453,20 @@ const RegistrationDashboard = () => {
                     <SelectValue placeholder="Select class" />
                   </SelectTrigger>
                   <SelectContent>
-                    {classOptions.map(option => (
-                      <SelectItem key={option} value={option}>{option}</SelectItem>
+                    {classOptions.map((option) => (
+                      <SelectItem key={option} value={option}>
+                        {option}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
 
-                <Button 
+                <Button
                   onClick={promoteStudents}
-                  disabled={Object.values(selectedStudents).filter(Boolean).length === 0 || loading}
+                  disabled={
+                    Object.values(selectedStudents).filter(Boolean).length ===
+                      0 || loading
+                  }
                   className="gap-2"
                 >
                   {loading ? (
@@ -281,7 +477,8 @@ const RegistrationDashboard = () => {
                   ) : (
                     <>
                       <ChevronUp className="h-4 w-4" />
-                      Promote Selected ({Object.values(selectedStudents).filter(Boolean).length})
+                      Promote Selected (
+                      {Object.values(selectedStudents).filter(Boolean).length})
                     </>
                   )}
                 </Button>
@@ -293,12 +490,16 @@ const RegistrationDashboard = () => {
                     <TableHeader>
                       <TableRow>
                         <TableHead className="w-[50px]">
-                          <Checkbox 
-                            checked={filteredStudents.every(s => selectedStudents[s.id])}
+                          <Checkbox
+                            checked={filteredStudents.every(
+                              (s) => selectedStudents[s.id]
+                            )}
                             onCheckedChange={() => {
-                              const allSelected = filteredStudents.every(s => selectedStudents[s.id]);
-                              const newSelection = {...selectedStudents};
-                              filteredStudents.forEach(student => {
+                              const allSelected = filteredStudents.every(
+                                (s) => selectedStudents[s.id]
+                              );
+                              const newSelection = { ...selectedStudents };
+                              filteredStudents.forEach((student) => {
                                 newSelection[student.id] = !allSelected;
                               });
                               setSelectedStudents(newSelection);
@@ -313,40 +514,53 @@ const RegistrationDashboard = () => {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {filteredStudents.map(student => (
+                      {filteredStudents.map((student) => (
                         <TableRow key={student.id}>
                           <TableCell>
-                            <Checkbox 
+                            <Checkbox
                               checked={!!selectedStudents[student.id]}
                               onCheckedChange={() => {
-                                setSelectedStudents(prev => ({
+                                setSelectedStudents((prev) => ({
                                   ...prev,
-                                  [student.id]: !prev[student.id]
+                                  [student.id]: !prev[student.id],
                                 }));
                               }}
                             />
                           </TableCell>
-                          <TableCell>{student.name}</TableCell>
+                          <TableCell>
+                            {student.name_en}
+                            {student.isNewRegistration && (
+                              <span className="ml-2 px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
+                                New
+                              </span>
+                            )}
+                          </TableCell>
                           <TableCell>{student.currentClass}</TableCell>
                           <TableCell>{student.nextClass}</TableCell>
                           <TableCell>
-                            <span className={`px-2 py-1 rounded-full text-xs ${
-                              student.status === 'verified' ? 'bg-green-100 text-green-800' :
-                              student.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                              'bg-red-100 text-red-800'
-                            }`}>
+                            <span
+                              className={`px-2 py-1 rounded-full text-xs ${
+                                student.status === "verified"
+                                  ? "bg-green-100 text-green-800"
+                                  : student.status === "pending"
+                                  ? "bg-yellow-100 text-yellow-800"
+                                  : "bg-red-100 text-red-800"
+                              }`}
+                            >
                               {student.status}
                             </span>
                           </TableCell>
                           <TableCell className="text-right">
-                            <Button 
-                              variant="outline" 
+                            <Button
+                              variant="outline"
                               size="sm"
                               onClick={() => {
                                 setSelectedStudents({ [student.id]: true });
                                 promoteStudents();
                               }}
-                              disabled={loading || student.status !== 'verified'}
+                              disabled={
+                                loading || student.status !== "verified"
+                              }
                             >
                               {loading ? (
                                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -361,24 +575,28 @@ const RegistrationDashboard = () => {
                   </Table>
                 ) : (
                   <div className="text-center py-8 text-gray-500">
-                    {searchTerm 
-                      ? "No students match your search criteria" 
+                    {searchTerm
+                      ? "No students match your search criteria"
                       : "No students found in this class"}
                   </div>
                 )
               ) : (
                 <div className="text-center py-8 text-gray-500">
                   <Users className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-xl font-semibold text-gray-700 mb-2">Student Promotion System</h3>
-                  <p className="text-gray-500 mb-6">Select a class to view students available for promotion</p>
+                  <h3 className="text-xl font-semibold text-gray-700 mb-2">
+                    Student Promotion System
+                  </h3>
+                  <p className="text-gray-500 mb-6">
+                    Select a class to view students available for promotion
+                  </p>
                 </div>
               )}
             </CardContent>
           </Card>
         )}
 
-        {activeTab === 'new' && (
-          <NewStudentRegistrationForm />
+        {activeTab === "new" && (
+          <NewStudentRegistrationForm onSuccess={() => loadStudents()} />
         )}
       </div>
     </div>
