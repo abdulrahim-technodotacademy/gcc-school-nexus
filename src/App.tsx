@@ -18,6 +18,7 @@ import LoginModal from "./components/auth/LoginModal";
 import NewStudentRegistrationForm from "./components/dashboard/NewStudentRegistrationForm";
 import NewRegistrationForPublic from "./components/dashboard/NewRegistrationForPublic";
 import StudentDetailsPage from "./components/dashboard/StudentDetailsPage";
+import StudentDetails from "./pages/dashboard/StudentDetails";
 
 
 
@@ -42,7 +43,7 @@ const App = () => (
           <Route path="/dashboard/admin" element={<Admin />} />
           <Route path="/admin/login" element={<LoginModal />} />
           <Route path="/student/addmission" element={<NewStudentRegistrationForm />} />
-        <Route path="/student/:id" element={<StudentDetailsPage />} />
+        <Route path="/student/:id" element={<StudentDetails />} />
  
           <Route path="/student/newregisterforpublic" element={<NewRegistrationForPublic />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
