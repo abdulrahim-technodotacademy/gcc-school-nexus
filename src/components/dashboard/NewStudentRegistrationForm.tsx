@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,35 +8,88 @@ import { UserPlus, Upload, Save, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 const DOCUMENT_TYPES = [
-  { value: "BIRTH_CERTIFICATE", label: "Birth Certificate | شهادة الميلاد" },
-  { value: "PASSPORT", label: "Passport | جواز السفر" },
-  { value: "STUDENT_PHOTO", label: "Student Photo | صورة الطالب" },
-  { value: "FAMILY_CARD", label: "Family Card | بطاقة العائلة" },
-  { value: "VACCINATION_RECORD", label: "Vaccination Record | سجل التطعيم" }
+  { value: "BIRTH", label: "Birth Certificate | شهادة الميلاد" },
+  { value: "TRANSFER", label: "Transfer Certificate | شهادة النقل" },
+  { value: "PHOTO", label: "Photograph | صورة شخصية" },
+  { value: "ID", label: "ID Proof | بطاقة الهوية" },
+  { value: "GUARDIAN_ID", label: "Guardian ID Document | وثيقة هوية الوصي" },
+  { value: "OTHER", label: "Other | أخرى" }
+];
+
+const RELATIONSHIP_OPTIONS = [
+  { value: "Father", label: "Father | الأب" },
+  { value: "Mother", label: "Mother | الأم" },
+  { value: "Other", label: "Guardian | الوصي" }
+];
+
+const GENDER_OPTIONS = [
+  { value: "M", label: "Male | ذكر" },
+  { value: "F", label: "Female | أنثى" }
 ];
 
 const NewStudentRegistrationForm = () => {
+  const [departments, setDepartments] = useState<Array<{
+    id: string;
+    department_name: string;
+  }>>([]);
+
+  const [sections, setSections] = useState<Array<{
+    id: string;
+    name: string;
+  }>>([]);
+
+  const [isLoading, setIsLoading] = useState({
+    departments: false,
+    sections: false
+  });
+
   const [formData, setFormData] = useState({
     // Student Information
-    name_en: "",
-    name_ar: "",
+    admission_number: "ADM1234563",
+    en_first_name: "",
+    en_middle_name: "",
+    en_last_name: "",
+    ar_first_name: "",
+    ar_middle_name: "",
+    ar_last_name: "",
+    photo: null as File | null,
+    email: "",
+    phone: "",
     date_of_birth: "",
     gender: "",
-    nationality: "",
-    place_of_birth: "",
     religion: "",
+    nationality: "",
+    address: "",
+    city: "",
+    state: "",
+    postal_code: "",
+    country: "",
+    admission_class: "",
+    section: "",
+    admission_date: "",
+    previous_school: "",
+    has_special_needs: false,
+    special_needs_details: "",
     
     // Guardian Information
-    guardian_name_en: "",
-    guardian_name_ar: "",
-    guardian_phone: "",
-    guardian_relationship: "",
-    guardian_national_id: "",
+    name_en: "",
+    name_ar: "",
+    phone: "",
+    email: "",
+    address: "",
+    relationship: "",
+    national_id: "",
+    passport_number: "",
+    work_phone: "",
+    home_phone: "",
+    mobile: "",
+    occupation: "",
     
     // Documents
-    documents: [] as Array<{
-      type: string;
-      file: string;
+    student_documents: [] as Array<{
+      document_type: string,
+      file: string,
+      description: string
     }>
   });
 
@@ -45,76 +98,226 @@ const NewStudentRegistrationForm = () => {
     file: null as File | null
   });
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Fetch all departments (admission classes)
+  const fetchDepartments = async () => {
+    setIsLoading(prev => ({...prev, departments: true}));
+    try {
+      const accessToken = localStorage.getItem("accessToken");
+      const response = await fetch(
+        "http://139.59.69.37:8080/mawhiba/api/v1/students/department/",
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+      const data = await response.json();
+      setDepartments(data.data || []);
+    } catch (error) {
+      console.error("Error fetching departments:", error);
+      toast.error("Failed to load admission classes");
+    } finally {
+      setIsLoading(prev => ({...prev, departments: false}));
+    }
+  };
+
+  // Fetch all sections
+  const fetchSections = async () => {
+    setIsLoading(prev => ({...prev, sections: true}));
+    try {
+      const accessToken = localStorage.getItem("accessToken");
+      const response = await fetch(
+        "http://139.59.69.37:8080/mawhiba/api/v1/students/section/",
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+      const data = await response.json();
+      setSections(data.data || []);
+    } catch (error) {
+      console.error("Error fetching sections:", error);
+      toast.error("Failed to load sections");
+    } finally {
+      setIsLoading(prev => ({...prev, sections: false}));
+    }
+  };
+
+  useEffect(() => {
+    fetchDepartments();
+    fetchSections();
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSubmitting(true);
     
-    // Validation
+    // Basic validation
     if (
-      !formData.name_en || 
-      !formData.name_ar || 
+      !formData.en_first_name || 
+      !formData.ar_first_name || 
       !formData.date_of_birth ||
-      !formData.guardian_name_en ||
-      !formData.guardian_name_ar ||
-      !formData.guardian_phone
+      !formData.name_en ||
+      !formData.name_ar ||
+      !formData.phone
     ) {
       toast.error("Please fill in all required fields");
+      setIsSubmitting(false);
       return;
     }
     
-    if (formData.documents.length === 0) {
-      toast.error("Please upload at least one document");
-      return;
-    }
+    // if (formData.student_documents.length === 0) {
+    //   toast.error("Please upload at least one document");
+    //   setIsSubmitting(false);
+    //   return;
+    // }
+    
 
-    // Prepare data for storage
+    // Prepare data for API
     const registrationData = {
-      student: {
+      guardian: {
         name_en: formData.name_en,
         name_ar: formData.name_ar,
+        phone: formData.phone,
+        email: formData.email,
+        address: formData.address,
+        relationship: formData.relationship,
+        national_id: formData.national_id,
+        passport_number: formData.passport_number,
+        work_phone: formData.work_phone,
+        home_phone: formData.home_phone,
+        mobile: formData.mobile,
+        occupation: formData.occupation
+      },
+      student: {
+        admission_number: formData.admission_number,
+        en_first_name: formData.en_first_name,
+        en_middle_name: formData.en_middle_name,
+        en_last_name: formData.en_last_name,
+        ar_first_name: formData.ar_first_name,
+        ar_middle_name: formData.ar_middle_name,
+        ar_last_name: formData.ar_last_name,
+        photo: formData.photo ? await convertToBase64(formData.photo) : null,
+        email: formData.email,
+        phone: formData.phone,
         date_of_birth: formData.date_of_birth,
+        age_years: calculateAge(formData.date_of_birth),
         gender: formData.gender,
+        religion: formData.religion,
         nationality: formData.nationality,
-        place_of_birth: formData.place_of_birth,
-        religion: formData.religion
+        address: formData.address,
+        city: formData.city,
+        state: formData.state,
+        postal_code: formData.postal_code,
+        country: formData.country,
+        admission_class: formData.admission_class,
+        section: formData.section,
+        admission_date: formData.admission_date,
+        previous_school: formData.previous_school,
+        has_special_needs: formData.has_special_needs,
+        special_needs_details: formData.special_needs_details,
+        is_verified_registration_officer: true
       },
-      guardian: {
-        name_en: formData.guardian_name_en,
-        name_ar: formData.guardian_name_ar,
-        phone: formData.guardian_phone,
-        relationship: formData.guardian_relationship,
-        national_id: formData.guardian_national_id
-      },
-      documents: formData.documents
+      student_documents: formData.student_documents.map(doc => ({
+        document_type: doc.document_type,
+        file: doc.file,
+        description: doc.description || `document_${Date.now()}`
+      }))
     };
 
     try {
-      // Save to localStorage
-      const registrations = JSON.parse(localStorage.getItem('studentRegistrations') || '[]');
-      registrations.push(registrationData);
-      localStorage.setItem('studentRegistrations', JSON.stringify(registrations));
-      
+      const accessToken = localStorage.getItem("accessToken");
+      if (!accessToken) {
+        throw new Error("Authentication token not found");
+      }
+
+      const response = await fetch("http://139.59.69.37:8080/mawhiba/api/v1/students/create-student-details/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${accessToken}`
+        },
+        body: JSON.stringify(registrationData)
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to submit registration");
+      }
+
+      const result = await response.json();
       toast.success("Registration submitted successfully!");
       
       // Reset form
       setFormData({
-        name_en: "",
-        name_ar: "",
+        admission_number: "ADM123456",
+        en_first_name: "",
+        en_middle_name: "",
+        en_last_name: "",
+        ar_first_name: "",
+        ar_middle_name: "",
+        ar_last_name: "",
+        photo: null,
+        email: "",
+        phone: "",
         date_of_birth: "",
         gender: "",
-        nationality: "",
-        place_of_birth: "",
         religion: "",
-        guardian_name_en: "",
-        guardian_name_ar: "",
-        guardian_phone: "",
-        guardian_relationship: "",
-        guardian_national_id: "",
-        documents: []
+        nationality: "",
+        address: "",
+        city: "",
+        state: "",
+        postal_code: "",
+        country: "",
+        admission_class: "",
+        section: "",
+        admission_date: "",
+        previous_school: "",
+        has_special_needs: false,
+        special_needs_details: "",
+        name_en: "",
+        name_ar: "",
+        phone: "",
+        email: "",
+        address: "",
+        relationship: "",
+        national_id: "",
+        passport_number: "",
+        work_phone: "",
+        home_phone: "",
+        mobile: "",
+        occupation: "",
+        student_documents: []
       });
     } catch (error) {
-      toast.error("Failed to save registration");
-      console.error(error);
+      console.error("Registration error:", error);
+      toast.error(error instanceof Error ? error.message : "Failed to submit registration");
+    } finally {
+      setIsSubmitting(false);
     }
+  };
+
+  const convertToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = error => reject(error);
+    });
+  };
+
+  const calculateAge = (dateOfBirth: string): number => {
+    const dob = new Date(dateOfBirth);
+    const today = new Date();
+    let age = today.getFullYear() - dob.getFullYear();
+    const monthDiff = today.getMonth() - dob.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) {
+      age--;
+    }
+    return age;
   };
 
   const handleFileUpload = () => {
@@ -126,13 +329,14 @@ const NewStudentRegistrationForm = () => {
     const reader = new FileReader();
     reader.onload = () => {
       const newDocument = {
-        type: currentDocument.type,
-        file: reader.result as string
+        document_type: currentDocument.type,
+        file: reader.result as string,
+        description: currentDocument.file?.name || ""
       };
 
       setFormData({
         ...formData,
-        documents: [...formData.documents, newDocument]
+        student_documents: [...formData.student_documents, newDocument]
       });
 
       setCurrentDocument({
@@ -145,17 +349,27 @@ const NewStudentRegistrationForm = () => {
     reader.readAsDataURL(currentDocument.file);
   };
 
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setFormData({
+        ...formData,
+        photo: e.target.files[0]
+      });
+      toast.success("Student photo uploaded");
+    }
+  };
+
   const removeDocument = (index: number) => {
-    const updatedDocs = [...formData.documents];
+    const updatedDocs = [...formData.student_documents];
     updatedDocs.splice(index, 1);
     setFormData({
       ...formData,
-      documents: updatedDocs
+      student_documents: updatedDocs
     });
   };
 
   return (
-    <Card className="max-w-3xl mx-auto mt-20 p-6 bg-white shadow-lg">
+    <Card className="max-w-4xl mx-auto mt-20 p-6 bg-white shadow-lg">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <UserPlus className="h-5 w-5" />
@@ -164,39 +378,130 @@ const NewStudentRegistrationForm = () => {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Student Information */}
+          {/* Student Information Section */}
           <div>
             <h3 className="text-lg font-semibold mb-4 border-b pb-2">
               Student Information | معلومات الطالب
             </h3>
             
             <div className="grid md:grid-cols-2 gap-4">
+              {/* Admission Number */}
+              <div>
+                <Label htmlFor="admission_number">Admission Number | رقم القبول</Label>
+                <Input
+                  id="admission_number"
+                  value={formData.admission_number}
+                  onChange={(e) => setFormData({...formData, admission_number: e.target.value})}
+                  placeholder="ADM123456"
+                />
+              </div>
+
+              {/* Student Photo */}
+              <div>
+                <Label htmlFor="photo">Student Photo | صورة الطالب</Label>
+                <div className="flex items-center gap-2">
+                  <Input
+                    id="photo"
+                    type="file"
+                    accept="image/*"
+                    onChange={handlePhotoUpload}
+                  />
+                  {formData.photo && (
+                    <span className="text-sm">{formData.photo.name}</span>
+                  )}
+                </div>
+              </div>
+
               {/* English Name */}
               <div>
-                <Label htmlFor="name_en">Name (English) * | الاسم (إنجليزي)</Label>
+                <Label htmlFor="en_first_name">First Name (English) * | الاسم الأول (إنجليزي)</Label>
                 <Input
-                  id="name_en"
-                  value={formData.name_en}
-                  onChange={(e) => setFormData({...formData, name_en: e.target.value})}
-                  placeholder="Student name in English"
+                  id="en_first_name"
+                  value={formData.en_first_name}
+                  onChange={(e) => setFormData({...formData, en_first_name: e.target.value})}
+                  placeholder="First name in English"
                   required
                 />
               </div>
-              
+
+              <div>
+                <Label htmlFor="en_middle_name">Middle Name (English) | الاسم الأوسط (إنجليزي)</Label>
+                <Input
+                  id="en_middle_name"
+                  value={formData.en_middle_name}
+                  onChange={(e) => setFormData({...formData, en_middle_name: e.target.value})}
+                  placeholder="Middle name in English"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="en_last_name">Last Name (English) | اسم العائلة (إنجليزي)</Label>
+                <Input
+                  id="en_last_name"
+                  value={formData.en_last_name}
+                  onChange={(e) => setFormData({...formData, en_last_name: e.target.value})}
+                  placeholder="Last name in English"
+                />
+              </div>
+
               {/* Arabic Name */}
               <div>
-                <Label htmlFor="name_ar">Name (Arabic) * | الاسم (عربي)</Label>
+                <Label htmlFor="ar_first_name">First Name (Arabic) * | الاسم الأول (عربي)</Label>
                 <Input
-                  id="name_ar"
-                  value={formData.name_ar}
-                  onChange={(e) => setFormData({...formData, name_ar: e.target.value})}
-                  placeholder="اسم الطالب بالعربية"
+                  id="ar_first_name"
+                  value={formData.ar_first_name}
+                  onChange={(e) => setFormData({...formData, ar_first_name: e.target.value})}
+                  placeholder="الاسم الأول بالعربية"
                   dir="rtl"
                   required
                 />
               </div>
-              
-              {/* Date of Birth */}
+
+              <div>
+                <Label htmlFor="ar_middle_name">Middle Name (Arabic) | الاسم الأوسط (عربي)</Label>
+                <Input
+                  id="ar_middle_name"
+                  value={formData.ar_middle_name}
+                  onChange={(e) => setFormData({...formData, ar_middle_name: e.target.value})}
+                  placeholder="الاسم الأوسط بالعربية"
+                  dir="rtl"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="ar_last_name">Last Name (Arabic) | اسم العائلة (عربي)</Label>
+                <Input
+                  id="ar_last_name"
+                  value={formData.ar_last_name}
+                  onChange={(e) => setFormData({...formData, ar_last_name: e.target.value})}
+                  placeholder="اسم العائلة بالعربية"
+                  dir="rtl"
+                />
+              </div>
+
+              {/* Contact Information */}
+              <div>
+                <Label htmlFor="email">Email | البريد الإلكتروني</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => setFormData({...formData, email: e.target.value})}
+                  placeholder="student@example.com"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="phone">Phone | الهاتف</Label>
+                <Input
+                  id="phone"
+                  value={formData.phone}
+                  onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                  placeholder="+1234567890"
+                />
+              </div>
+
+              {/* Personal Information */}
               <div>
                 <Label htmlFor="date_of_birth">Date of Birth * | تاريخ الميلاد</Label>
                 <Input
@@ -207,10 +512,9 @@ const NewStudentRegistrationForm = () => {
                   required
                 />
               </div>
-              
-              {/* Gender */}
+
               <div>
-                <Label htmlFor="gender">Gender | الجنس</Label>
+                <Label htmlFor="gender">Gender * | الجنس</Label>
                 <Select
                   value={formData.gender}
                   onValueChange={(value) => setFormData({...formData, gender: value})}
@@ -219,35 +523,15 @@ const NewStudentRegistrationForm = () => {
                     <SelectValue placeholder="Select gender" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="MALE">Male | ذكر</SelectItem>
-                    <SelectItem value="FEMALE">Female | أنثى</SelectItem>
+                    {GENDER_OPTIONS.map((gender) => (
+                      <SelectItem key={gender.value} value={gender.value}>
+                        {gender.label}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
-              
-              {/* Nationality */}
-              <div>
-                <Label htmlFor="nationality">Nationality | الجنسية</Label>
-                <Input
-                  id="nationality"
-                  value={formData.nationality}
-                  onChange={(e) => setFormData({...formData, nationality: e.target.value})}
-                  placeholder="Nationality"
-                />
-              </div>
-              
-              {/* Place of Birth */}
-              <div>
-                <Label htmlFor="place_of_birth">Place of Birth | مكان الميلاد</Label>
-                <Input
-                  id="place_of_birth"
-                  value={formData.place_of_birth}
-                  onChange={(e) => setFormData({...formData, place_of_birth: e.target.value})}
-                  placeholder="City, Country"
-                />
-              </div>
-              
-              {/* Religion */}
+
               <div>
                 <Label htmlFor="religion">Religion | الديانة</Label>
                 <Input
@@ -257,10 +541,155 @@ const NewStudentRegistrationForm = () => {
                   placeholder="Religion"
                 />
               </div>
+
+              <div>
+                <Label htmlFor="nationality">Nationality | الجنسية</Label>
+                <Input
+                  id="nationality"
+                  value={formData.nationality}
+                  onChange={(e) => setFormData({...formData, nationality: e.target.value})}
+                  placeholder="Nationality"
+                />
+              </div>
+
+              {/* Address Information */}
+              <div>
+                <Label htmlFor="address">Address | العنوان</Label>
+                <Input
+                  id="address"
+                  value={formData.address}
+                  onChange={(e) => setFormData({...formData, address: e.target.value})}
+                  placeholder="123 Main St, City, Country"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="city">City | المدينة</Label>
+                <Input
+                  id="city"
+                  value={formData.city}
+                  onChange={(e) => setFormData({...formData, city: e.target.value})}
+                  placeholder="City"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="state">State | المحافظة</Label>
+                <Input
+                  id="state"
+                  value={formData.state}
+                  onChange={(e) => setFormData({...formData, state: e.target.value})}
+                  placeholder="State"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="postal_code">Postal Code | الرمز البريدي</Label>
+                <Input
+                  id="postal_code"
+                  value={formData.postal_code}
+                  onChange={(e) => setFormData({...formData, postal_code: e.target.value})}
+                  placeholder="Postal code"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="country">Country | الدولة</Label>
+                <Input
+                  id="country"
+                  value={formData.country}
+                  onChange={(e) => setFormData({...formData, country: e.target.value})}
+                  placeholder="Country"
+                />
+              </div>
+
+              {/* School Information */}
+              <div>
+                <Label htmlFor="admission_class">Admission Class | الصف الدراسي</Label>
+                <Select
+                  value={formData.admission_class}
+                  onValueChange={(value) => setFormData({...formData, admission_class: value})}
+                  disabled={isLoading.departments}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder={isLoading.departments ? "Loading..." : "Select class"} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {departments.map((dept) => (
+                      <SelectItem key={dept.id} value={dept.id}>
+                        {dept.department_name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label htmlFor="section">Section | القسم</Label>
+                <Select
+                  value={formData.section}
+                  onValueChange={(value) => setFormData({...formData, section: value})}
+                  disabled={isLoading.sections}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder={isLoading.sections ? "Loading..." : "Select section"} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {sections.map((section) => (
+                      <SelectItem key={section.id} value={section.id}>
+                        {section.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label htmlFor="admission_date">Admission Date | تاريخ القبول</Label>
+                <Input
+                  id="admission_date"
+                  type="date"
+                  value={formData.admission_date}
+                  onChange={(e) => setFormData({...formData, admission_date: e.target.value})}
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="previous_school">Previous School | المدرسة السابقة</Label>
+                <Input
+                  id="previous_school"
+                  value={formData.previous_school}
+                  onChange={(e) => setFormData({...formData, previous_school: e.target.value})}
+                  placeholder="Previous school name"
+                />
+              </div>
+
+              {/* Special Needs */}
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id="has_special_needs"
+                  checked={formData.has_special_needs}
+                  onChange={(e) => setFormData({...formData, has_special_needs: e.target.checked})}
+                />
+                <Label htmlFor="has_special_needs">Has Special Needs | لديه احتياجات خاصة</Label>
+              </div>
+
+              {formData.has_special_needs && (
+                <div>
+                  <Label htmlFor="special_needs_details">Special Needs Details | تفاصيل الاحتياجات الخاصة</Label>
+                  <Input
+                    id="special_needs_details"
+                    value={formData.special_needs_details}
+                    onChange={(e) => setFormData({...formData, special_needs_details: e.target.value})}
+                    placeholder="Details about special needs"
+                  />
+                </div>
+              )}
             </div>
           </div>
 
-          {/* Guardian Information */}
+          {/* Guardian Information Section */}
           <div>
             <h3 className="text-lg font-semibold mb-4 border-b pb-2">
               Guardian Information | معلومات ولي الأمر
@@ -269,11 +698,11 @@ const NewStudentRegistrationForm = () => {
             <div className="grid md:grid-cols-2 gap-4">
               {/* Guardian English Name */}
               <div>
-                <Label htmlFor="guardian_name_en">Name (English) * | الاسم (إنجليزي)</Label>
+                <Label htmlFor="name_en">Name (English) * | الاسم (إنجليزي)</Label>
                 <Input
-                  id="guardian_name_en"
-                  value={formData.guardian_name_en}
-                  onChange={(e) => setFormData({...formData, guardian_name_en: e.target.value})}
+                  id="name_en"
+                  value={formData.name_en}
+                  onChange={(e) => setFormData({...formData, name_en: e.target.value})}
                   placeholder="Guardian name in English"
                   required
                 />
@@ -281,75 +710,152 @@ const NewStudentRegistrationForm = () => {
               
               {/* Guardian Arabic Name */}
               <div>
-                <Label htmlFor="guardian_name_ar">Name (Arabic) * | الاسم (عربي)</Label>
+                <Label htmlFor="name_ar">Name (Arabic) * | الاسم (عربي)</Label>
                 <Input
-                  id="guardian_name_ar"
-                  value={formData.guardian_name_ar}
-                  onChange={(e) => setFormData({...formData, guardian_name_ar: e.target.value})}
+                  id="name_ar"
+                  value={formData.name_ar}
+                  onChange={(e) => setFormData({...formData, name_ar: e.target.value})}
                   placeholder="اسم ولي الأمر بالعربية"
                   dir="rtl"
                   required
                 />
               </div>
               
-              {/* Guardian Phone */}
+              {/* Contact Information */}
               <div>
-                <Label htmlFor="guardian_phone">Phone * | الهاتف</Label>
+                <Label htmlFor="phone">Phone * | الهاتف</Label>
                 <Input
-                  id="guardian_phone"
-                  value={formData.guardian_phone}
-                  onChange={(e) => setFormData({...formData, guardian_phone: e.target.value})}
-                  placeholder="+966XXXXXXXXX"
+                  id="phone"
+                  value={formData.phone}
+                  onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                  placeholder="+1234567890"
                   required
                 />
               </div>
-              
+
+              <div>
+                <Label htmlFor="email">Email | البريد الإلكتروني</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => setFormData({...formData, email: e.target.value})}
+                  placeholder="guardian@example.com"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="mobile">Mobile | الجوال</Label>
+                <Input
+                  id="mobile"
+                  value={formData.mobile}
+                  onChange={(e) => setFormData({...formData, mobile: e.target.value})}
+                  placeholder="+1122334455"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="work_phone">Work Phone | هاتف العمل</Label>
+                <Input
+                  id="work_phone"
+                  value={formData.work_phone}
+                  onChange={(e) => setFormData({...formData, work_phone: e.target.value})}
+                  placeholder="+9876543210"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="home_phone">Home Phone | الهاتف المنزلي</Label>
+                <Input
+                  id="home_phone"
+                  value={formData.home_phone}
+                  onChange={(e) => setFormData({...formData, home_phone: e.target.value})}
+                  placeholder="+192837465"
+                />
+              </div>
+
               {/* Relationship */}
               <div>
-                <Label htmlFor="guardian_relationship">Relationship * | العلاقة</Label>
+                <Label htmlFor="relationship">Relationship * | العلاقة</Label>
                 <Select
-                  value={formData.guardian_relationship}
-                  onValueChange={(value) => setFormData({...formData, guardian_relationship: value})}
+                  value={formData.relationship}
+                  onValueChange={(value) => setFormData({...formData, relationship: value})}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select relationship" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="FATHER">Father | الأب</SelectItem>
-                    <SelectItem value="MOTHER">Mother | الأم</SelectItem>
-                    <SelectItem value="GUARDIAN">Guardian | الوصي</SelectItem>
+                    {RELATIONSHIP_OPTIONS.map((relation) => (
+                      <SelectItem key={relation.value} value={relation.value}>
+                        {relation.label}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
-              
-              {/* National ID */}
+
               <div>
-                <Label htmlFor="guardian_national_id">National ID | الهوية الوطنية</Label>
+                <Label htmlFor="occupation">Occupation | المهنة</Label>
                 <Input
-                  id="guardian_national_id"
-                  value={formData.guardian_national_id}
-                  onChange={(e) => setFormData({...formData, guardian_national_id: e.target.value})}
-                  placeholder="National ID number"
+                  id="occupation"
+                  value={formData.occupation}
+                  onChange={(e) => setFormData({...formData, occupation: e.target.value})}
+                  placeholder="Occupation"
+                />
+              </div>
+
+              {/* Identification */}
+              <div>
+                <Label htmlFor="national_id">National ID | الهوية الوطنية</Label>
+                <Input
+                  id="national_id"
+                  value={formData.national_id}
+                  onChange={(e) => setFormData({...formData, national_id: e.target.value})}
+                  placeholder="A123456789"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="passport_number">Passport Number | رقم الجواز</Label>
+                <Input
+                  id="passport_number"
+                  value={formData.passport_number}
+                  onChange={(e) => setFormData({...formData, passport_number: e.target.value})}
+                  placeholder="P987654321"
+                />
+              </div>
+
+              {/* Address */}
+              <div className="md:col-span-2">
+                <Label htmlFor="address">Address | العنوان</Label>
+                <Input
+                  id="address"
+                  value={formData.address}
+                  onChange={(e) => setFormData({...formData, address: e.target.value})}
+                  placeholder="123 Main St, City, Country"
                 />
               </div>
             </div>
           </div>
 
-          {/* Documents Upload */}
+          {/* Documents Upload Section */}
           <div>
             <h3 className="text-lg font-semibold mb-4 border-b pb-2">
               Required Documents | الوثائق المطلوبة
             </h3>
             
             {/* Uploaded Documents List */}
-            {formData.documents.length > 0 && (
+            {formData.student_documents.length > 0 && (
               <div className="mb-4 space-y-2">
                 <h4 className="font-medium">Uploaded Documents | الوثائق المرفوعة</h4>
-                {formData.documents.map((doc, index) => (
+                {formData.student_documents.map((doc, index) => (
                   <div key={index} className="flex items-center justify-between p-2 border rounded">
-                    <span>
-                      {DOCUMENT_TYPES.find(t => t.value === doc.type)?.label.split('|')[0].trim()}
-                    </span>
+                    <div className="flex flex-col">
+                      <span>
+                        {DOCUMENT_TYPES.find(t => t.value === doc.document_type)?.label.split('|')[0].trim()}
+                      </span>
+                      {doc.description && <span className="text-xs text-gray-500">{doc.description}</span>}
+                    </div>
                     <Button
                       type="button"
                       variant="ghost"
@@ -410,6 +916,7 @@ const NewStudentRegistrationForm = () => {
                 onClick={handleFileUpload}
                 variant="outline"
                 className="w-full"
+                disabled={!currentDocument.type || !currentDocument.file}
               >
                 Add Document | إضافة وثيقة
               </Button>
@@ -417,9 +924,20 @@ const NewStudentRegistrationForm = () => {
           </div>
 
           {/* Submit Button */}
-          <Button type="submit" size="lg" className="w-full bg-green-600 hover:bg-green-700">
-            <Save className="mr-2 h-5 w-5" />
-            Register Student | تسجيل الطالب
+          <Button 
+            type="submit" 
+            size="lg" 
+            className="w-full bg-green-600 hover:bg-green-700"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? (
+              "Submitting..."
+            ) : (
+              <>
+                <Save className="mr-2 h-5 w-5" />
+                Register Student | تسجيل الطالب
+              </>
+            )}
           </Button>
         </form>
       </CardContent>

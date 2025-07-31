@@ -30,6 +30,7 @@ import {
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import NewStudentRegistrationForm from "./NewStudentRegistrationForm";
+import { log } from "console";
 
 type Student = {
   id: string;
@@ -52,12 +53,16 @@ type Student = {
     relationship: string;
     national_id: string;
   };
+  admission_class?: {
+    id: string,
+    department_name?: "10"
+};
   documents?: Array<{
     type: string;
     file: string;
   }>;
 };
-// eslint-disable-next-line react-hooks/rules-of-hooks
+
 
 
 const RegistrationDashboard = () => {
@@ -65,6 +70,8 @@ const RegistrationDashboard = () => {
   const [activeTab, setActiveTab] = useState<"search" | "new" | "promotion">(
     "new"
   );
+   const [departments, setDepartments] = useState<Department[]>([]);
+  const [classList, setClassList] = useState<string[]>([]);
   const [selectedClass, setSelectedClass] = useState<string>("");
   const [students, setStudents] = useState<Student[]>([]);
   const [selectedStudents, setSelectedStudents] = useState<
@@ -85,71 +92,166 @@ const RegistrationDashboard = () => {
     "Grade 5",
     "Grade 6",
   ];
-  const mockStudents: Student[] = [
-    {
-      id: "1",
-      name_en: "Ahmed Mohamed",
-      name_ar: "أحمد محمد",
-      date_of_birth: "2015-03-10",
-      gender: "MALE",
-      nationality: "Egyptian",
-      place_of_birth: "Cairo",
-      religion: "Muslim",
-      currentClass: "Grade 1",
-      nextClass: "Grade 2",
-      status: "verified",
-      registrationDate: "2023-05-15",
-    },
-    {
-      id: "2",
-      name_en: "Fatima Ali",
-      name_ar: "فاطمة علي",
-      date_of_birth: "2016-01-15",
-      gender: "FEMALE",
-      nationality: "Egyptian",
-      place_of_birth: "Alexandria",
-      religion: "Muslim",
-      currentClass: "Grade 1",
-      nextClass: "Grade 2",
-      status: "pending",
-      registrationDate: "2023-06-20",
-    },
-  ];
 
-  // Load students from localStorage and mock data
-  const loadStudents = () => {
-    setLoading(true);
 
-    // Get registrations from localStorage
-    const storedRegistrations = localStorage.getItem("studentRegistrations");
-    const localStorageStudents: Student[] = storedRegistrations
-      ? JSON.parse(storedRegistrations).map((reg: any, index: number) => ({
-          id: `local-${index}`,
-          name_en: reg.student.name_en,
-          name_ar: reg.student.name_ar,
-          date_of_birth: reg.student.date_of_birth,
-          gender: reg.student.gender,
-          nationality: reg.student.nationality,
-          place_of_birth: reg.student.place_of_birth,
-          religion: reg.student.religion,
-          currentClass: "Grade 1", // Default or get from form
-          nextClass: "Grade 2",
-          status: "pending",
-          registrationDate: new Date().toISOString().split("T")[0],
-          isNewRegistration: true,
-          guardian: reg.guardian,
-          documents: reg.documents,
-        }))
-      : [];
 
-    // Combine with mock data, putting localStorage students first
-    const allStudents = [...localStorageStudents, ...mockStudents];
+const loadStudents = async () => {
+  setLoading(true);
 
-    setStudents(allStudents);
+  try {
+    const token = localStorage.getItem("accessToken");
+
+    const response = await fetch(
+    //   `${import.meta.env.VITE_API_BASE_URL}/students/student/`,
+      `${import.meta.env.VITE_API_BASE_URL}/students/get-studentdetails-all/?is_verified_registration_officer=true`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    if (!response.ok) {
+      throw new Error("Failed to fetch students from API");
+    }
+
+      const result = await response.json();
+      const studentsData: Student[] = result.data.map((student: any, index: number) => ({
+      id: student.id,
+      name_en: `${student.en_first_name} ${student.en_middle_name ?? ""} ${student.en_last_name}`.trim(),
+      name_ar: `${student.ar_first_name} ${student.ar_middle_name ?? ""} ${student.ar_last_name}`.trim(),
+      date_of_birth: student.date_of_birth,
+      gender: student.gender === "M" ? "Male" : "Female",
+      nationality: student.nationality,
+      place_of_birth: student.city, // or use student.address if preferred
+      religion: student.religion,
+      currentClass: student.admission_class?.department_name || "Unknown",
+      nextClass: "", // Optional: Update this if logic is available
+      status: student.is_verified_registration_officer ? "verified" : "pending",
+      registrationDate: student.admission_date,
+      isNewRegistration: true,
+      guardian: student.guardian,
+      documents: [], // Populate this if available
+    }));
+
+
+ 
+
+    
+
+    // const studentsData = result.data;
+    setStudents(studentsData); // React will update state asynchronously
+    // console.log("Students loaded:", studentsData); // Use this
+
+      const uniqueClasses = Array.from(
+    new Set(students.map((student) => student.currentClass))
+  ).sort((a, b) => {
+    return isNaN(Number(a)) || isNaN(Number(b))
+      ? a.localeCompare(b)
+      : Number(a) - Number(b);
+  });
+
+  setClassList(uniqueClasses);
+
+  } catch (error) {
+    console.error("Error loading students:", error);
+  } finally {
     setLoading(false);
+  }
+};
+
+
+
+// const loadStudents = async () => {
+//   setLoading(true);
+
+//   try {
+//      const token = localStorage.getItem("accessToken"); 
+//     const response = await fetch(
+//     //   `${import.meta.env.VITE_API_BASE_URL}/students/student/`,
+//       `${import.meta.env.VITE_API_BASE_URL}/students/get-studentdetails-all/?is_verified_registration_officer=false`,
+//       {
+//         method: "GET",
+//         headers: {
+//           "Content-Type": "application/json",
+//           Authorization: `Bearer ${token}`, // <-- Add token here
+//         },
+//       }
+//     );
+//     if (!response.ok) {
+//       throw new Error("Failed to fetch students from API");
+//     }
+
+//       const result = await response.json();
+
+//     if (!result.status) {
+//       throw new Error(result.message || "API responded with an error");
+//     }
+// console.log(result.data);
+
+//     // Convert response to Student[] type
+//    const apiStudents: Student[] = result.data.map((student: any, index: number) => ({
+//       id: student.id,
+//       name_en: `${student.en_first_name} ${student.en_middle_name ?? ""} ${student.en_last_name}`.trim(),
+//       name_ar: `${student.ar_first_name} ${student.ar_middle_name ?? ""} ${student.ar_last_name}`.trim(),
+//       date_of_birth: student.date_of_birth,
+//       gender: student.gender === "M" ? "Male" : "Female",
+//       nationality: student.nationality,
+//       place_of_birth: student.city, // or you can use student.address
+//       religion: student.religion,
+//       currentClass: student.admission_class?.department_name || "Unknown",
+//       nextClass: "Pending", // You can compute this later
+//       status: student.is_verified_registration_officer ? "verified" : "pending",
+//       registrationDate: student.admission_date,
+//       isNewRegistration: true,
+//       guardian: student.guardian,
+//       documents: [], // If documents are available, map them here
+//     }));
+
+    
+
+//     // Optionally merge with mockStudents if needed
+//     const allStudents = [...apiStudents];
+
+//     setStudents(allStudents);
+//   } catch (error) {
+//     console.error("Error loading students:", error);
+//   } finally {
+//     setLoading(false);
+//   }
+// };
+
+
+
+ const fetchDepartments = async () => {
+    setLoading(true);
+    const token = localStorage.getItem("accessToken");
+
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/students/department/`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to fetch departments");
+      }
+
+      const data = await res.json();
+      setDepartments(data);
+    } catch (err: any) {
+      console.error(err.message || "Something went wrong");
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
+    fetchDepartments();
     if (activeTab === "search" || activeTab === "promotion") {
       loadStudents();
     }
@@ -164,28 +266,45 @@ const RegistrationDashboard = () => {
     setSelectedStudents({});
   };
 
-  const verifyStudent = (studentId: string) => {
-    setLoading(true);
+const verifyStudent = async (studentId: string) => {
+  setLoading(true);
 
-    setTimeout(() => {
-      setStudents(
-        students.map((student) => {
-          if (student.id === studentId) {
-            // If it's a localStorage student, you might want to move it to your database
-            if (student.isNewRegistration) {
-              console.log("Moving student to database:", student);
-              // Here you would typically make an API call to your backend
-              // After successful API call, remove from localStorage
-              clearVerifiedRegistrations();
-            }
-            return { ...student, status: "verified" };
-          }
-          return student;
-        })
-      );
-      setLoading(false);
-    }, 300);
-  };
+  try {
+    const token = localStorage.getItem("accessToken");
+
+    const response = await fetch(
+      `${import.meta.env.VITE_API_BASE_URL}/students/student/${studentId}/`,
+      {
+        method: "PATCH", // or "PUT" if your backend expects full replacement
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          is_verified_registration_officer: true,
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error("Failed to verify student");
+    }
+
+    // Optional: update UI immediately
+    setStudents((prev) =>
+      prev.map((student) =>
+        student.id === studentId
+          ? { ...student, status: "verified", is_verified_registration_officer: true }
+          : student
+      )
+    );
+  } catch (error) {
+    console.error("Error verifying student:", error);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   const rejectStudent = (studentId: string) => {
     setLoading(true);
@@ -222,20 +341,63 @@ const RegistrationDashboard = () => {
     }
   };
 
-  const promoteStudents = async () => {
-    setLoading(true);
-    const studentIds = Object.keys(selectedStudents).filter(
-      (id) => selectedStudents[id]
+//   const promoteStudents = async () => {
+//     setLoading(true);
+//     const studentIds = Object.keys(selectedStudents).filter(
+//       (id) => selectedStudents[id]
+//     );
+
+//     setTimeout(() => {
+//       console.log("Promoting students:", studentIds);
+//       setLoading(false);
+//       setSelectedStudents({});
+//       alert(`${studentIds.length} students promoted successfully!`);
+//       handleClassChange(selectedClass);
+//     }, 1000);
+//   };
+
+
+
+const promoteStudent = async (studentId: string, newClass: string) => {
+
+  console.log("Promoting student:", studentId, "to class:", newClass);
+
+  const student = students.find((s) => s.id === studentId);
+  
+
+  console.log("Promoting student:", studentId, "to class:", newClass);
+  
+
+  const token = localStorage.getItem("accessToken");
+
+  try {
+    const res = await fetch(
+      `${import.meta.env.VITE_API_BASE_URL}/students/student/${studentId}/`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          admission_class: {
+            department_name: newClass,
+          },
+        }),
+      }
     );
 
-    setTimeout(() => {
-      console.log("Promoting students:", studentIds);
-      setLoading(false);
-      setSelectedStudents({});
-      alert(`${studentIds.length} students promoted successfully!`);
-      handleClassChange(selectedClass);
-    }, 1000);
-  };
+    if (!res.ok) throw new Error("Failed to promote");
+
+   
+    await loadStudents(); // refresh
+  } catch (err) {
+    console.error(err);
+   
+  }
+};
+
+
 
   const filteredStudents = students.filter((student) => {
     const matchesSearch =
@@ -453,7 +615,7 @@ const RegistrationDashboard = () => {
                     <SelectValue placeholder="Select class" />
                   </SelectTrigger>
                   <SelectContent>
-                    {classOptions.map((option) => (
+                    {classList.map((option) => (
                       <SelectItem key={option} value={option}>
                         {option}
                       </SelectItem>
@@ -461,7 +623,7 @@ const RegistrationDashboard = () => {
                   </SelectContent>
                 </Select>
 
-                <Button
+                {/* <Button
                   onClick={promoteStudents}
                   disabled={
                     Object.values(selectedStudents).filter(Boolean).length ===
@@ -481,7 +643,7 @@ const RegistrationDashboard = () => {
                       {Object.values(selectedStudents).filter(Boolean).length})
                     </>
                   )}
-                </Button>
+                </Button> */}
               </div>
 
               {selectedClass ? (
@@ -489,7 +651,7 @@ const RegistrationDashboard = () => {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead className="w-[50px]">
+                        {/* <TableHead className="w-[50px]">
                           <Checkbox
                             checked={filteredStudents.every(
                               (s) => selectedStudents[s.id]
@@ -505,7 +667,7 @@ const RegistrationDashboard = () => {
                               setSelectedStudents(newSelection);
                             }}
                           />
-                        </TableHead>
+                        </TableHead> */}
                         <TableHead>Student Name</TableHead>
                         <TableHead>Current Class</TableHead>
                         <TableHead>Next Class</TableHead>
@@ -516,7 +678,7 @@ const RegistrationDashboard = () => {
                     <TableBody>
                       {filteredStudents.map((student) => (
                         <TableRow key={student.id}>
-                          <TableCell>
+                          {/* <TableCell>
                             <Checkbox
                               checked={!!selectedStudents[student.id]}
                               onCheckedChange={() => {
@@ -526,7 +688,134 @@ const RegistrationDashboard = () => {
                                 }));
                               }}
                             />
+                          </TableCell> */}
+                          <TableCell>
+                            {student.name_en}
+                            {student.isNewRegistration && (
+                              <span className="ml-2 px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
+                                New
+                              </span>
+                            )}
                           </TableCell>
+                          <TableCell>{student.currentClass}</TableCell>
+                          <TableCell>
+                            <Select
+                                value={student.nextClass}
+                                onValueChange={(value) => {
+                                const updatedStudents = students.map((s) =>
+                                    s.id === student.id ? { ...s, nextClass: value } : s
+                                );
+                                setStudents(updatedStudents);
+                                }}
+                            >
+                                <SelectTrigger className="w-[130px] md:w-[180px] text-sm">
+                                <SelectValue placeholder="Select class" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                {departments.map((dept) => (
+                                    <SelectItem key={dept.id} value={dept.department_name}>
+                                    {dept.department_name}
+                                    </SelectItem>
+                                ))}
+                                </SelectContent>
+                            </Select>
+                            </TableCell>
+
+
+
+
+                          <TableCell>
+                            <span
+                              className={`px-2 py-1 rounded-full text-xs ${
+                                student.status === "verified"
+                                  ? "bg-green-100 text-green-800"
+                                  : student.status === "pending"
+                                  ? "bg-yellow-100 text-yellow-800"
+                                  : "bg-red-100 text-red-800"
+                              }`}
+                            >
+                              {student.status}
+                            </span>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                    promoteStudent(student.id, student.nextClass);
+                                }}
+                                disabled={loading || student.status !== "verified"}
+                                >
+                                {loading ? (
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                    "Promote"
+                                )}
+                                </Button>
+
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                ) : (
+                  <div className="text-center py-8 text-gray-500">
+                    {searchTerm
+                      ? "No students match your search criteria"
+                      : "No students found in this class"}
+                  </div>
+                )
+              ) : (
+                // <div className="text-center py-8 text-gray-500">
+                //   <Users className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                //   <h3 className="text-xl font-semibold text-gray-700 mb-2">
+                //     Student Promotion System
+                //   </h3>
+                //   <p className="text-gray-500 mb-6">
+                //     Select a class to view students available for promotion
+                //   </p>
+                // </div>
+                   <Table>
+                    <TableHeader>
+                      <TableRow>
+                        {/* <TableHead className="w-[50px]">
+                          <Checkbox
+                            checked={filteredStudents.every(
+                              (s) => selectedStudents[s.id]
+                            )}
+                            onCheckedChange={() => {
+                              const allSelected = filteredStudents.every(
+                                (s) => selectedStudents[s.id]
+                              );
+                              const newSelection = { ...selectedStudents };
+                              filteredStudents.forEach((student) => {
+                                newSelection[student.id] = !allSelected;
+                              });
+                              setSelectedStudents(newSelection);
+                            }}
+                          />
+                        </TableHead> */}
+                        <TableHead>Student Name</TableHead>
+                        <TableHead>Current Class</TableHead>
+                        <TableHead>Next Class</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead className="text-right">Action</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredStudents.map((student) => (
+                        <TableRow key={student.id}>
+                          {/* <TableCell>
+                            <Checkbox
+                              checked={!!selectedStudents[student.id]}
+                              onCheckedChange={() => {
+                                setSelectedStudents((prev) => ({
+                                  ...prev,
+                                  [student.id]: !prev[student.id],
+                                }));
+                              }}
+                            />
+                          </TableCell> */}
                           <TableCell>
                             {student.name_en}
                             {student.isNewRegistration && (
@@ -551,45 +840,26 @@ const RegistrationDashboard = () => {
                             </span>
                           </TableCell>
                           <TableCell className="text-right">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => {
-                                setSelectedStudents({ [student.id]: true });
-                                promoteStudents();
-                              }}
-                              disabled={
-                                loading || student.status !== "verified"
-                              }
-                            >
-                              {loading ? (
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                              ) : (
-                                "Promote"
-                              )}
-                            </Button>
+                             <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                    promoteStudent(student.id, student.nextClass);
+                                }}
+                                disabled={loading || student.status !== "verified"}
+                                >
+                                {loading ? (
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                    "Promote"
+                                )}
+                                </Button>
+
                           </TableCell>
                         </TableRow>
                       ))}
                     </TableBody>
                   </Table>
-                ) : (
-                  <div className="text-center py-8 text-gray-500">
-                    {searchTerm
-                      ? "No students match your search criteria"
-                      : "No students found in this class"}
-                  </div>
-                )
-              ) : (
-                <div className="text-center py-8 text-gray-500">
-                  <Users className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-xl font-semibold text-gray-700 mb-2">
-                    Student Promotion System
-                  </h3>
-                  <p className="text-gray-500 mb-6">
-                    Select a class to view students available for promotion
-                  </p>
-                </div>
               )}
             </CardContent>
           </Card>

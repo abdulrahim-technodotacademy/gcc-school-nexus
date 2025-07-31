@@ -7,6 +7,30 @@ import { GraduationCap, User, Lock, Building, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import Navigation from "@/components/layout/Navigation";
+import axios from "axios";
+import { jwtDecode } from "jwt-decode";
+
+interface TokenPayload {
+  token_type: string;
+  exp: number;
+  iat: number;
+  jti: string;
+  user_id: string;
+  username: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  role: string;
+  role_id: number;
+  phone_number: string;
+  is_admin: boolean;
+  is_staff: boolean;
+  is_superadmin: boolean;
+  is_active: boolean;
+  is_deleted: boolean;
+  is_otp_enabled: boolean;
+  permissions: string[];
+}
 
 const userRoles = [
   {
@@ -14,12 +38,12 @@ const userRoles = [
     label: "Registration Officer",
     labelAr: "موظف تسجيل",
   },
-    {
+  {
     value: "financial-Admin",
     label: "Financial Agreement Officer",
     labelAr: "موظف العقود المالية",
   },
-    { 
+  { 
     value: "School-admin", 
     label: "Accountant", 
     labelAr: "محاسب"
@@ -29,65 +53,91 @@ const userRoles = [
     label: "Accountant Controller", 
     labelAr: "مراقب مالي" 
   },
-    {
+  {
     value: "student-list",
     label: "Student List",
     labelAr: "قوائم الطلاب",
   },
-  
 ];
 
 const LoginPage = () => {
   const navigate = useNavigate();
   const [activeRole, setActiveRole] = useState<string | null>(null);
   const [credentials, setCredentials] = useState({
-    username: "",
+    email: "",
     password: "",
   });
+  const [isLoading, setIsLoading] = useState(false);
 
- const handleRoleClick = (role: string) => {
-  if (role === "Addmission") {
-    navigate("/student/addmission");
-  } else {
-    setActiveRole(role);
-    // Auto-fill test credentials for specific roles
-    if (role === "School-admin" || role === "financial-Admin" || role === "accountant-Admin") {
-      setCredentials({
-        username: "test",
-        password: "test",
-      });
+  const handleRoleClick = (role: string) => {
+    if (role === "Addmission") {
+      navigate("/student/addmission");
     } else {
-      // Reset for other roles
+      setActiveRole(role);
+      // Reset credentials when changing role
       setCredentials({
-        username: "",
+        email: "",
         password: "",
       });
     }
-  }
-};
-  const handleLogin = (e: React.FormEvent, role: string) => {
-    e.preventDefault();
+  };
 
-    if (!credentials.username || !credentials.password) {
+  const handleLogin = async (e: React.FormEvent, role: string) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    if (!credentials.email || !credentials.password) {
       toast.error("Please fill in all fields");
+      setIsLoading(false);
       return;
     }
 
-    console.log("Login attempt:", { ...credentials, role });
-    toast.success(`Welcome! Logging in as ${role}`);
+    try {
+      const response = await axios.post(
+        "http://139.59.69.37:8080/mawhiba/api/v1/accounts/login/",
+        {
+          email: credentials.email,
+          password: credentials.password,
+        }
+      );
 
-    const dashboardRoutes = {
-      "registration": "/dashboard/registration",
-      "student-list": "/dashboard/student-list",
-     "School-admin": "/dashboard/admin",   // School Admin dashboard
-     "financial-Admin": "/dashboard/financial", // Financial admin
-     "accountant-Admin": "/dashboard/accountant", // Accountant
-    };
+      const { access, refresh } = response.data;
+      
+      // Decode the refresh token to get user information
+      const decoded: TokenPayload = jwtDecode(refresh);
+      
+      // Store tokens in localStorage or cookies
+      localStorage.setItem("accessToken", access);
+      localStorage.setItem("refreshToken", refresh);
+      localStorage.setItem("userData", JSON.stringify(decoded));
 
-    setTimeout(() => {
-      navigate(dashboardRoutes[role as keyof typeof dashboardRoutes]);
-      setActiveRole(null); // Close modal after navigation
-    }, 1000);
+      toast.success(`Welcome ${decoded.first_name}!`);
+
+      // Redirect based on role
+      switch (decoded.role) {
+        case "Registration Officer":
+          navigate("/dashboard/registration");
+          break;
+        case "Financial Agreement Officer":
+          navigate("/dashboard/financial");
+          break;
+        case "Accountant":
+          navigate("/dashboard/admin");
+          break;
+        case "Accountant Controller":
+          navigate("/dashboard/accountant");
+          break;
+        default:
+          navigate("/dashboard");
+      }
+
+    } catch (error) {
+      console.error("Login error:", error);
+      toast.error("Invalid email or password");
+    } finally {
+      setIsLoading(false);
+      setActiveRole(null);
+    }
   };
 
   return (
@@ -133,7 +183,7 @@ const LoginPage = () => {
           </div>
         </div>
 
-        {/* Modal for login form - won't show for Admission role */}
+        {/* Modal for login form */}
         {activeRole && activeRole !== "Addmission" && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
             <Card className="w-full max-w-md relative">
@@ -161,21 +211,21 @@ const LoginPage = () => {
                 >
                   <div className="space-y-2">
                     <Label
-                      htmlFor="username"
+                      htmlFor="email"
                       className="flex items-center gap-2"
                     >
                       <User className="h-4 w-4" />
-                      Username | اسم المستخدم
+                      Email | البريد الإلكتروني
                     </Label>
                     <Input
-                      id="username"
-                      type="text"
-                      placeholder="Enter username"
-                      value={credentials.username}
+                      id="email"
+                      type="email"
+                      placeholder="Enter email"
+                      value={credentials.email}
                       onChange={(e) =>
                         setCredentials({
                           ...credentials,
-                          username: e.target.value,
+                          email: e.target.value,
                         })
                       }
                       className="h-12"
@@ -209,8 +259,9 @@ const LoginPage = () => {
                     style={{ backgroundColor: "rgb(102,42,20)" }}
                     type="submit"
                     className="w-full h-12 text-white text-lg"
+                    disabled={isLoading}
                   >
-                    Login | دخول
+                    {isLoading ? "Logging in..." : "Login | دخول"}
                   </Button>
                 </form>
               </CardContent>

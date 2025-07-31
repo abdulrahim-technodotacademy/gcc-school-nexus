@@ -4,8 +4,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { FileText, DollarSign, PenTool, Clock } from "lucide-react";
+import { FileText, DollarSign, PenTool, Clock, CheckCircle, XCircle, Send } from "lucide-react";
 import { useEffect, useState } from "react";
+import SignaturePad from "react-signature-canvas";
 
 interface Student {
   id: string;
@@ -15,65 +16,64 @@ interface Student {
   type: string;
   typeAr: string;
   registrationDate: string;
-  status: string;
+  status: 'pending' | 'agreement-created' | 'sent-for-signature' | 'signed' | 'rejected';
   statusAr: string;
   isNewRegistration?: boolean;
   rawData?: any;
+  guardianEmail?: string;
 }
 
 interface FeeStructure {
-  tuitionFee: string;
-  registrationFee: string;
-  booksFee: string;
-  uniformFee: string;
-  transportFee: string;
-  examFee: string;
-  extraActivities: string;
-  total: string;
+  tuitionFee: number;
+  registrationFee: number;
+  booksFee: number;
+  uniformFee: number;
+  transportFee: number;
+  examFee: number;
+  extraActivities: number;
+  total: number;
   paymentPlan?: string;
   discount?: number;
+}
+
+interface Agreement {
+  id: string;
+  studentId: string;
+  terms: string;
+  fees: FeeStructure;
+  createdDate: string;
+  sentDate?: string;
+  signedDate?: string;
+  signatureData?: string;
+  rejectionReason?: string;
 }
 
 const FinancialAgreementDashboard = () => {
   const [activeTab, setActiveTab] = useState<'pending' | 'agreements' | 'esign'>('pending');
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [pendingStudents, setPendingStudents] = useState<Student[]>([]);
-  const [completedStudents, setCompletedStudents] = useState<Student[]>([]);
+  const [agreements, setAgreements] = useState<Agreement[]>([]);
   const [feeStructure, setFeeStructure] = useState<FeeStructure>({
-    tuitionFee: '',
-    registrationFee: '',
-    booksFee: '',
-    uniformFee: '',
-    transportFee: '',
-    examFee: '',
-    extraActivities: '',
-    total: ''
+    tuitionFee: 0,
+    registrationFee: 0,
+    booksFee: 0,
+    uniformFee: 0,
+    transportFee: 0,
+    examFee: 0,
+    extraActivities: 0,
+    total: 0
   });
   const [agreementDetails, setAgreementDetails] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [signaturePad, setSignaturePad] = useState<SignaturePad | null>(null);
+  const [isSigning, setIsSigning] = useState(false);
+  const [currentSigningAgreement, setCurrentSigningAgreement] = useState<Agreement | null>(null);
+  const [rejectionReason, setRejectionReason] = useState('');
 
-  // Load students from localStorage and mock data
+  // Load initial data
   useEffect(() => {
-    const loadStudents = () => {
-      // 1. Load new registrations from localStorage (priority)
-      const storedRegistrations = localStorage.getItem('studentRegistrations');
-      const localStorageStudents: Student[] = storedRegistrations 
-        ? JSON.parse(storedRegistrations).map((reg: any, index: number) => ({
-            id: `new-reg-${index}`,
-            name: reg.student.name_en,
-            nameAr: reg.student.name_ar,
-            grade: 'Grade 1', // Default or calculate from age
-            type: 'New Admission',
-            typeAr: 'قيد جديد',
-            registrationDate: new Date().toISOString().split('T')[0],
-            status: 'Pending Agreement',
-            statusAr: 'بانتظار العقد',
-            isNewRegistration: true,
-            rawData: reg
-          }))
-        : [];
-
-      // 2. Static mock data (secondary)
+    const loadData = () => {
+      // Load pending students
       const mockStudents: Student[] = [
         {
           id: '1',
@@ -83,8 +83,9 @@ const FinancialAgreementDashboard = () => {
           type: 'New Admission',
           typeAr: 'قيد جديد',
           registrationDate: '2023-05-15',
-          status: 'Pending Agreement',
-          statusAr: 'بانتظار العقد'
+          status: 'pending',
+          statusAr: 'بانتظار العقد',
+          guardianEmail: 'parent1@example.com'
         },
         {
           id: '2',
@@ -94,62 +95,72 @@ const FinancialAgreementDashboard = () => {
           type: 'Re-registration',
           typeAr: 'إعادة تسجيل',
           registrationDate: '2023-05-10',
-          status: 'Pending Agreement',
-          statusAr: 'بانتظار العقد'
+          status: 'pending',
+          statusAr: 'بانتظار العقد',
+          guardianEmail: 'parent2@example.com'
         }
       ];
+      setPendingStudents(mockStudents);
 
-      setPendingStudents([...localStorageStudents, ...mockStudents]);
+      // Load agreements (mock)
+      const mockAgreements: Agreement[] = [
+        {
+          id: 'agr-1',
+          studentId: '1',
+          terms: 'Standard school terms and conditions apply...',
+          fees: {
+            tuitionFee: 1000,
+            registrationFee: 200,
+            booksFee: 150,
+            uniformFee: 100,
+            transportFee: 300,
+            examFee: 50,
+            extraActivities: 75,
+            total: 1875,
+            paymentPlan: '1',
+            discount: 5
+          },
+          createdDate: '2023-06-01',
+          sentDate: '2023-06-02',
+          status: 'sent-for-signature'
+        }
+      ];
+      setAgreements(mockAgreements);
     };
 
-    loadStudents();
+    loadData();
   }, []);
 
   const calculateTotal = () => {
-    setFeeStructure(prev => {
-      const subtotal = Object.keys(prev)
-        .filter(key => !['total', 'paymentPlan', 'discount'].includes(key))
-        .reduce((sum, key) => sum + (parseFloat(prev[key as keyof FeeStructure]) || 0), 0);
-      
-      const discount = prev.paymentPlan === '1' ? 5 : 0;
-      const total = subtotal * (1 - discount/100);
-      
-      return {
-        ...prev,
-        total: total.toFixed(2),
-        discount
-      };
-    });
+    const subtotal = Object.entries(feeStructure)
+      .filter(([key]) => !['total', 'paymentPlan', 'discount'].includes(key))
+      .reduce((sum, [_, value]) => sum + (typeof value === 'number' ? value : 0), 0);
+    
+    const discount = feeStructure.paymentPlan === '1' ? 5 : 0;
+    const total = subtotal * (1 - discount/100);
+    
+    setFeeStructure(prev => ({
+      ...prev,
+      total,
+      discount
+    }));
   };
 
   const handleCreateAgreement = (student: Student) => {
     setSelectedStudent(student);
     
-    // Pre-populate fees for new registrations
-    if (student.isNewRegistration) {
-      setFeeStructure({
-        tuitionFee: '1000',
-        registrationFee: '200',
-        booksFee: '150',
-        uniformFee: '100',
-        transportFee: '300',
-        examFee: '50',
-        extraActivities: '75',
-        total: '1875',
-        paymentPlan: '1'
-      });
-    } else {
-      setFeeStructure({
-        tuitionFee: '',
-        registrationFee: '',
-        booksFee: '',
-        uniformFee: '',
-        transportFee: '',
-        examFee: '',
-        extraActivities: '',
-        total: ''
-      });
-    }
+    // Pre-populate fees
+    setFeeStructure({
+      tuitionFee: 1000,
+      registrationFee: 200,
+      booksFee: 150,
+      uniformFee: 100,
+      transportFee: 300,
+      examFee: 50,
+      extraActivities: 75,
+      total: 1875,
+      paymentPlan: '1'
+    });
     
     setActiveTab('agreements');
   };
@@ -160,72 +171,127 @@ const FinancialAgreementDashboard = () => {
       return;
     }
 
-    const newCompletedStudent: Student = {
-      ...selectedStudent,
-      status: 'Agreement Created',
-      statusAr: 'تم إنشاء العقد',
-      rawData: {
-        ...(selectedStudent.rawData || {}),
-        agreementDetails,
-        fees: feeStructure
-      }
+    const newAgreement: Agreement = {
+      id: `agr-${Date.now()}`,
+      studentId: selectedStudent.id,
+      terms: agreementDetails,
+      fees: feeStructure,
+      createdDate: new Date().toISOString().split('T')[0]
     };
 
     // Update state
-    setCompletedStudents([...completedStudents, newCompletedStudent]);
-    setPendingStudents(pendingStudents.filter(student => student.id !== selectedStudent.id));
-
-    // Remove from localStorage if it was a new registration
-    if (selectedStudent.isNewRegistration) {
-      const storedRegistrations = localStorage.getItem('studentRegistrations');
-      if (storedRegistrations) {
-        const registrations = JSON.parse(storedRegistrations);
-        const updatedRegistrations = registrations.filter(
-          (reg: any, index: number) => `new-reg-${index}` !== selectedStudent.id
-        );
-        localStorage.setItem('studentRegistrations', JSON.stringify(updatedRegistrations));
-      }
-    }
-
+    setAgreements([...agreements, newAgreement]);
+    setPendingStudents(pendingStudents.filter(s => s.id !== selectedStudent.id));
+    
     // Reset form
-    setSelectedStudent(null);
-    setFeeStructure({
-      tuitionFee: '',
-      registrationFee: '',
-      booksFee: '',
-      uniformFee: '',
-      transportFee: '',
-      examFee: '',
-      extraActivities: '',
-      total: ''
-    });
-    setAgreementDetails('');
+    resetAgreementForm();
     alert('Agreement created successfully!');
     setActiveTab('pending');
   };
 
-  const handleSendForESignature = () => {
-    if (!selectedStudent) return;
-    alert(`Sent agreement for ${selectedStudent.name} to e-signature.`);
+  const handleSendForESignature = (agreement: Agreement) => {
+    // In a real app, this would send an email to the guardian
+    const updatedAgreement = {
+      ...agreement,
+      sentDate: new Date().toISOString().split('T')[0],
+      status: 'sent-for-signature'
+    };
+    
+    setAgreements(agreements.map(a => 
+      a.id === agreement.id ? updatedAgreement : a
+    ));
+    alert(`Sent agreement to ${getStudent(agreement.studentId)?.guardianEmail}`);
+  };
+
+  const startSigningProcess = (agreement: Agreement) => {
+    setCurrentSigningAgreement(agreement);
+    setIsSigning(true);
+  };
+
+  const completeSigning = () => {
+    if (!signaturePad || !currentSigningAgreement) return;
+    
+    const signatureData = signaturePad.toDataURL();
+    const updatedAgreement = {
+      ...currentSigningAgreement,
+      signedDate: new Date().toISOString().split('T')[0],
+      signatureData,
+      status: 'signed'
+    };
+    
+    setAgreements(agreements.map(a => 
+      a.id === currentSigningAgreement.id ? updatedAgreement : a
+    ));
+    
+    setIsSigning(false);
+    setCurrentSigningAgreement(null);
+    signaturePad.clear();
+  };
+
+  const rejectAgreement = (agreement: Agreement) => {
+    if (!rejectionReason) {
+      alert('Please provide a reason for rejection');
+      return;
+    }
+    
+    const updatedAgreement = {
+      ...agreement,
+      rejectionReason,
+      status: 'rejected'
+    };
+    
+    setAgreements(agreements.map(a => 
+      a.id === agreement.id ? updatedAgreement : a
+    ));
+    setRejectionReason('');
+  };
+
+  const resetAgreementForm = () => {
+    setSelectedStudent(null);
+    setFeeStructure({
+      tuitionFee: 0,
+      registrationFee: 0,
+      booksFee: 0,
+      uniformFee: 0,
+      transportFee: 0,
+      examFee: 0,
+      extraActivities: 0,
+      total: 0
+    });
+    setAgreementDetails('');
+  };
+
+  const getStudent = (studentId: string) => {
+    return [...pendingStudents].find(s => s.id === studentId);
   };
 
   const filteredStudents = pendingStudents.filter(student => 
-    statusFilter === 'all' || student.status.includes(statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1))
+    statusFilter === 'all' || student.status === statusFilter
   );
+
+  const filteredAgreements = agreements.filter(agreement => {
+    if (activeTab === 'esign') return true;
+    return agreement.status === 'agreement-created';
+  });
 
   return (
     <div className="p-6 space-y-6">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Financial Agreement Officer</h1>
           <p className="text-gray-600" dir="rtl">موظف العقود المالية</p>
         </div>
-        <Button className="bg-green-600 hover:bg-green-700" onClick={() => setActiveTab('agreements')}>
+        <Button 
+          className="bg-green-600 hover:bg-green-700" 
+          onClick={() => setActiveTab('agreements')}
+        >
           <FileText className="mr-2 h-4 w-4" />
           New Agreement | اتفاقية جديدة
         </Button>
       </div>
 
+      {/* Tabs */}
       <div className="flex space-x-4 border-b">
         <button
           className={`px-6 py-3 font-medium ${activeTab === 'pending' ? 'border-b-2 border-green-600 text-green-600' : 'text-gray-600'}`}
@@ -250,6 +316,7 @@ const FinancialAgreementDashboard = () => {
         </button>
       </div>
 
+      {/* Content */}
       <div className="space-y-6">
         {activeTab === 'pending' && (
           <Card>
@@ -287,11 +354,6 @@ const FinancialAgreementDashboard = () => {
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="font-medium">{student.name}</div>
                           <div className="text-gray-500" dir="rtl">{student.nameAr}</div>
-                          {student.isNewRegistration && (
-                            <span className="mt-1 inline-block px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
-                              New Registration
-                            </span>
-                          )}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{student.grade}</td>
                         <td className="px-6 py-4 whitespace-nowrap">
@@ -331,6 +393,7 @@ const FinancialAgreementDashboard = () => {
             <CardContent>
               {selectedStudent ? (
                 <div className="space-y-6">
+                  {/* Student Details */}
                   <div className="border-b pb-4">
                     <h3 className="text-lg font-semibold">Student Details</h3>
                     <div className="grid grid-cols-2 gap-4 mt-2">
@@ -347,27 +410,28 @@ const FinancialAgreementDashboard = () => {
                         <Input value={selectedStudent.grade} readOnly />
                       </div>
                       <div>
-                        <Label>Registration Type</Label>
-                        <Input value={selectedStudent.type} readOnly />
+                        <Label>Guardian Email</Label>
+                        <Input value={selectedStudent.guardianEmail || 'N/A'} readOnly />
                       </div>
                     </div>
                   </div>
 
+                  {/* Fee Structure */}
                   <div>
                     <h3 className="text-lg font-semibold">Fee Structure</h3>
                     <div className="grid grid-cols-2 gap-4 mt-4">
-                      {Object.keys(feeStructure)
-                        .filter(key => !['total', 'paymentPlan', 'discount'].includes(key))
-                        .map((key) => (
+                      {Object.entries(feeStructure)
+                        .filter(([key]) => !['total', 'paymentPlan', 'discount'].includes(key))
+                        .map(([key, value]) => (
                           <div key={key}>
                             <Label>{key.split(/(?=[A-Z])/).join(' ')}</Label>
                             <Input
                               type="number"
-                              value={feeStructure[key as keyof FeeStructure]}
+                              value={value}
                               onChange={(e) => {
                                 setFeeStructure(prev => ({ 
                                   ...prev, 
-                                  [key]: e.target.value 
+                                  [key]: parseFloat(e.target.value) || 0
                                 }));
                                 calculateTotal();
                               }}
@@ -402,7 +466,7 @@ const FinancialAgreementDashboard = () => {
                       <div>
                         <Label>Total Amount</Label>
                         <Input 
-                          value={feeStructure.total} 
+                          value={`${feeStructure.total.toFixed(2)} (${feeStructure.discount || 0}% discount)`} 
                           readOnly 
                           className="font-semibold"
                         />
@@ -410,6 +474,7 @@ const FinancialAgreementDashboard = () => {
                     </div>
                   </div>
 
+                  {/* Agreement Terms */}
                   <div>
                     <Label>Agreement Terms</Label>
                     <Textarea
@@ -420,13 +485,11 @@ const FinancialAgreementDashboard = () => {
                     />
                   </div>
 
+                  {/* Action Buttons */}
                   <div className="flex justify-end gap-4 pt-4">
                     <Button 
                       variant="outline"
-                      onClick={() => {
-                        setSelectedStudent(null);
-                        setActiveTab('pending');
-                      }}
+                      onClick={resetAgreementForm}
                     >
                       Cancel
                     </Button>
@@ -436,27 +499,54 @@ const FinancialAgreementDashboard = () => {
                     >
                       Save Agreement
                     </Button>
-                    <Button 
-                      className="bg-blue-600 hover:bg-blue-700"
-                      onClick={handleSendForESignature}
-                    >
-                      Send for E-Signature
-                    </Button>
                   </div>
                 </div>
               ) : (
-                <div className="text-center py-12">
-                  <FileText className="mx-auto h-12 w-12 text-gray-400" />
-                  <h3 className="mt-2 text-lg font-medium text-gray-900">No student selected</h3>
-                  <p className="mt-1 text-sm text-gray-500">
-                    Select a student from the Pending Students tab to create an agreement
-                  </p>
-                  <Button 
-                    className="mt-4"
-                    onClick={() => setActiveTab('pending')}
-                  >
-                    View Pending Students
-                  </Button>
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold">Created Agreements</h3>
+                  {agreements.filter(a => a.status === 'agreement-created').length > 0 ? (
+                    <div className="space-y-2">
+                      {agreements.filter(a => a.status === 'agreement-created').map(agreement => {
+                        const student = getStudent(agreement.studentId);
+                        return (
+                          <Card key={agreement.id}>
+                            <CardContent className="p-4 flex justify-between items-center">
+                              <div>
+                                <h4 className="font-medium">{student?.name}</h4>
+                                <p className="text-sm text-gray-600">
+                                  {student?.grade} • Total: ${agreement.fees.total.toFixed(2)}
+                                </p>
+                                <p className="text-sm mt-1 text-gray-500">
+                                  Created: {agreement.createdDate}
+                                </p>
+                              </div>
+                              <Button 
+                                onClick={() => handleSendForESignature(agreement)}
+                                className="bg-blue-600 hover:bg-blue-700"
+                              >
+                                <Send className="mr-2 h-4 w-4" />
+                                Send for E-Signature
+                              </Button>
+                            </CardContent>
+                          </Card>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="text-center py-12">
+                      <FileText className="mx-auto h-12 w-12 text-gray-400" />
+                      <h3 className="mt-2 text-lg font-medium text-gray-900">No agreements created</h3>
+                      <p className="mt-1 text-sm text-gray-500">
+                        Select a student from the Pending Students tab to create an agreement
+                      </p>
+                      <Button 
+                        className="mt-4"
+                        onClick={() => setActiveTab('pending')}
+                      >
+                        View Pending Students
+                      </Button>
+                    </div>
+                  )}
                 </div>
               )}
             </CardContent>
@@ -469,33 +559,183 @@ const FinancialAgreementDashboard = () => {
               <CardTitle>E-Signature Management</CardTitle>
             </CardHeader>
             <CardContent>
-              {completedStudents.length > 0 ? (
-                <div className="space-y-4">
-                  {completedStudents.map((student) => (
-                    <div key={student.id} className="border rounded-lg p-4">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <h4 className="font-medium">{student.name}</h4>
-                          <p className="text-sm text-gray-600">{student.grade} • {student.type}</p>
-                          <p className="mt-2 text-sm">
-                            <span className="font-medium">Total Fees:</span> {student.rawData?.fees?.total || 'N/A'}
-                          </p>
-                        </div>
-                        <Button className="bg-blue-600 hover:bg-blue-700">
-                          <PenTool className="mr-2 h-4 w-4" />
-                          Manage Signature
-                        </Button>
-                      </div>
+              {isSigning ? (
+                <div className="space-y-6">
+                  <h3 className="text-lg font-semibold">
+                    Sign Agreement for {getStudent(currentSigningAgreement?.studentId || '')?.name}
+                  </h3>
+                  
+                  <div className="border rounded-lg p-4">
+                    <Label>Signature</Label>
+                    <div className="border-2 border-dashed rounded-lg h-48 w-full">
+                      <SignaturePad 
+                        canvasProps={{ className: 'w-full h-full' }}
+                        ref={(ref) => setSignaturePad(ref)}
+                      />
                     </div>
-                  ))}
+                    <div className="flex justify-end mt-2">
+                      <Button 
+                        variant="outline" 
+                        onClick={() => signaturePad?.clear()}
+                        className="mr-2"
+                      >
+                        Clear
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label>Agreement Terms</Label>
+                    <div className="border rounded-lg p-4 max-h-60 overflow-y-auto">
+                      {currentSigningAgreement?.terms}
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end gap-4">
+                    <Button 
+                      variant="outline"
+                      onClick={() => {
+                        setIsSigning(false);
+                        setCurrentSigningAgreement(null);
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                    <Button 
+                      className="bg-green-600 hover:bg-green-700"
+                      onClick={completeSigning}
+                    >
+                      <CheckCircle className="mr-2 h-4 w-4" />
+                      Confirm Signature
+                    </Button>
+                  </div>
                 </div>
               ) : (
-                <div className="text-center py-12">
-                  <PenTool className="mx-auto h-12 w-12 text-gray-400" />
-                  <h3 className="mt-2 text-lg font-medium text-gray-900">No agreements pending signature</h3>
-                  <p className="mt-1 text-sm text-gray-500">
-                    Agreements will appear here after they are created and sent for signature
-                  </p>
+                <div className="space-y-4">
+                  {/* Pending Signatures */}
+                  <div>
+                    <h3 className="text-lg font-semibold mb-4">Pending Signatures</h3>
+                    {agreements.filter(a => a.status === 'sent-for-signature').length > 0 ? (
+                      <div className="space-y-2">
+                        {agreements.filter(a => a.status === 'sent-for-signature').map(agreement => {
+                          const student = getStudent(agreement.studentId);
+                          return (
+                            <Card key={agreement.id}>
+                              <CardContent className="p-4">
+                                <div className="flex justify-between items-center">
+                                  <div>
+                                    <h4 className="font-medium">{student?.name}</h4>
+                                    <p className="text-sm text-gray-600">
+                                      {student?.grade} • Total: ${agreement.fees.total.toFixed(2)}
+                                    </p>
+                                    <p className="text-sm mt-1 text-gray-500">
+                                      Sent on: {agreement.sentDate}
+                                    </p>
+                                  </div>
+                                  <Button 
+                                    onClick={() => startSigningProcess(agreement)}
+                                    className="bg-blue-600 hover:bg-blue-700"
+                                  >
+                                    <PenTool className="mr-2 h-4 w-4" />
+                                    Sign Now
+                                  </Button>
+                                </div>
+                              </CardContent>
+                            </Card>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <div className="text-center py-8">
+                        <CheckCircle className="mx-auto h-10 w-10 text-gray-400" />
+                        <p className="mt-2 text-gray-600">No agreements pending signature</p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Signed Agreements */}
+                  <div className="mt-8">
+                    <h3 className="text-lg font-semibold mb-4">Completed Signatures</h3>
+                    {agreements.filter(a => a.status === 'signed').length > 0 ? (
+                      <div className="space-y-2">
+                        {agreements.filter(a => a.status === 'signed').map(agreement => {
+                          const student = getStudent(agreement.studentId);
+                          return (
+                            <Card key={agreement.id}>
+                              <CardContent className="p-4">
+                                <div className="flex justify-between items-center">
+                                  <div>
+                                    <h4 className="font-medium">{student?.name}</h4>
+                                    <p className="text-sm text-gray-600">
+                                      {student?.grade} • Signed on: {agreement.signedDate}
+                                    </p>
+                                  </div>
+                                  <div className="flex items-center space-x-2">
+                                    <div className="text-green-600 flex items-center">
+                                      <CheckCircle className="h-4 w-4 mr-1" />
+                                      <span>Signed</span>
+                                    </div>
+                                    <Button 
+                                      variant="outline"
+                                      onClick={() => {
+                                        // View signature modal would go here
+                                        alert('Showing signature details');
+                                      }}
+                                    >
+                                      View
+                                    </Button>
+                                  </div>
+                                </div>
+                              </CardContent>
+                            </Card>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <div className="text-center py-8">
+                        <FileText className="mx-auto h-10 w-10 text-gray-400" />
+                        <p className="mt-2 text-gray-600">No completed signatures yet</p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Rejected Agreements */}
+                  <div className="mt-8">
+                    <h3 className="text-lg font-semibold mb-4">Rejected Agreements</h3>
+                    {agreements.filter(a => a.status === 'rejected').length > 0 ? (
+                      <div className="space-y-2">
+                        {agreements.filter(a => a.status === 'rejected').map(agreement => {
+                          const student = getStudent(agreement.studentId);
+                          return (
+                            <Card key={agreement.id}>
+                              <CardContent className="p-4">
+                                <div className="flex justify-between items-center">
+                                  <div>
+                                    <h4 className="font-medium">{student?.name}</h4>
+                                    <p className="text-sm text-gray-600">
+                                      {student?.grade} • Rejected on: {agreement.sentDate}
+                                    </p>
+                                    <p className="text-sm mt-1 text-red-600">
+                                      Reason: {agreement.rejectionReason}
+                                    </p>
+                                  </div>
+                                  <div className="text-red-600 flex items-center">
+                                    <XCircle className="h-4 w-4 mr-1" />
+                                    <span>Rejected</span>
+                                  </div>
+                                </div>
+                              </CardContent>
+                            </Card>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <div className="text-center py-8">
+                        <CheckCircle className="mx-auto h-10 w-10 text-gray-400" />
+                        <p className="mt-2 text-gray-600">No rejected agreements</p>
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
             </CardContent>
