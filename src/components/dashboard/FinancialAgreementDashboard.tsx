@@ -71,65 +71,77 @@ const FinancialAgreementDashboard = () => {
   const [rejectionReason, setRejectionReason] = useState('');
 
   // Load initial data
-  useEffect(() => {
-    const loadData = () => {
-      // Load pending students
-      const mockStudents: Student[] = [
-        {
-          id: '1',
-          name: 'Ahmed Al-Maamari',
-          nameAr: 'أحمد المعمري',
-          grade: 'Grade 5',
-          type: 'New Admission',
-          typeAr: 'قيد جديد',
-          registrationDate: '2023-05-15',
-          status: 'pending',
-          statusAr: 'بانتظار العقد',
-          guardianEmail: 'parent1@example.com'
-        },
-        {
-          id: '2',
-          name: 'Mariam Al-Hinai',
-          nameAr: 'مريم الهنائي',
-          grade: 'Grade 8',
-          type: 'Re-registration',
-          typeAr: 'إعادة تسجيل',
-          registrationDate: '2023-05-10',
-          status: 'pending',
-          statusAr: 'بانتظار العقد',
-          guardianEmail: 'parent2@example.com'
-        }
-      ];
-      setPendingStudents(mockStudents);
+// Update your useEffect hook for fetching data:
+useEffect(() => {
+  const loadData = async () => {
+    try {
+      const accessToken = localStorage.getItem("accessToken");
+      
+      if (!accessToken) {
+        console.error("No access token found");
+        return;
+      }
 
-      // Load agreements (mock)
-      const mockAgreements: Agreement[] = [
-        {
-          id: 'agr-1',
-          studentId: '1',
-          terms: 'Standard school terms and conditions apply...',
-          fees: {
-            tuitionFee: 1000,
-            registrationFee: 200,
-            booksFee: 150,
-            uniformFee: 100,
-            transportFee: 300,
-            examFee: 50,
-            extraActivities: 75,
-            total: 1875,
-            paymentPlan: '1',
-            discount: 5
-          },
-          createdDate: '2023-06-01',
-          sentDate: '2023-06-02',
-          status: 'sent-for-signature'
+      const response = await fetch(
+        "http://139.59.69.37:8080/mawhiba/api/v1/students/studentslist-financial-agreement/",
+        { 
+          headers: {
+            "Authorization": `Bearer ${accessToken}`,
+            "Content-Type": "application/json"
+          }
         }
-      ];
-      setAgreements(mockAgreements);
-    };
+      );
 
-    loadData();
-  }, []);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log("API Response:", data);
+
+      // Handle different response formats
+      let studentsArray = [];
+      
+      // Case 1: Response is an array of students
+      if (Array.isArray(data)) {
+        studentsArray = data;
+      } 
+      // Case 2: Response is an object with data property containing array
+      else if (data.data && Array.isArray(data.data)) {
+        studentsArray = data.data;
+      }
+      // Case 3: Single student object
+      else if (data.id) {
+        studentsArray = [data];
+      } else {
+        throw new Error("Unexpected API response format");
+      }
+
+      // Transform the data to match your Student interface
+      const formattedStudents: Student[] = studentsArray.map((student: any) => ({
+        id: student.id?.toString() || "unknown-id",
+        name: `${student.en_first_name || ''} ${student.en_last_name || ''}`.trim(),
+        nameAr: `${student.ar_first_name || ''} ${student.ar_last_name || ''}`.trim(),
+        grade: student.admission_class || "N/A", // You may need to map this to actual grade names
+        type: student.is_promoted ? "Re-registration" : "New Admission",
+        typeAr: student.is_promoted ? "إعادة تسجيل" : "قيد جديد",
+        registrationDate: student.admission_date || new Date().toISOString().split('T')[0],
+        status: 'pending',
+        statusAr: 'بانتظار العقد',
+        guardianEmail: student.email || "",
+        rawData: student // Preserve original data
+      }));
+      
+      setPendingStudents(formattedStudents);
+
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      // Optionally set error state to display to user
+    }
+  };
+
+  loadData();
+}, []);
 
   const calculateTotal = () => {
     const subtotal = Object.entries(feeStructure)
@@ -341,7 +353,7 @@ const FinancialAgreementDashboard = () => {
                   <thead className="bg-gray-50">
                     <tr>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Grade</th>
+                      {/* <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Grade</th> */}
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
@@ -355,7 +367,7 @@ const FinancialAgreementDashboard = () => {
                           <div className="font-medium">{student.name}</div>
                           <div className="text-gray-500" dir="rtl">{student.nameAr}</div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{student.grade}</td>
+                        {/* <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{student.grade}</td> */}
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div>{student.type}</div>
                           <div className="text-gray-500" dir="rtl">{student.typeAr}</div>
