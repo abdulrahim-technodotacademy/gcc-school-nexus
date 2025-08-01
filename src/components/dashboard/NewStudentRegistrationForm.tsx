@@ -106,7 +106,7 @@ const NewStudentRegistrationForm = () => {
     try {
       const accessToken = localStorage.getItem("accessToken");
       const response = await fetch(
-        "http://139.59.69.37:8080/mawhiba/api/v1/students/department/",
+        `${import.meta.env.VITE_API_BASE_URL}/students/department/`,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -129,7 +129,7 @@ const NewStudentRegistrationForm = () => {
     try {
       const accessToken = localStorage.getItem("accessToken");
       const response = await fetch(
-        "http://139.59.69.37:8080/mawhiba/api/v1/students/section/",
+        `${import.meta.env.VITE_API_BASE_URL}/students/section/`,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -219,7 +219,7 @@ const NewStudentRegistrationForm = () => {
         previous_school: formData.previous_school,
         has_special_needs: formData.has_special_needs,
         special_needs_details: formData.special_needs_details,
-        is_verified_registration_officer: true
+        is_verified_registration_officer: false
       },
       student_documents: formData.student_documents.map(doc => ({
         document_type: doc.document_type,
@@ -234,7 +234,7 @@ const NewStudentRegistrationForm = () => {
         throw new Error("Authentication token not found");
       }
 
-      const response = await fetch("http://139.59.69.37:8080/mawhiba/api/v1/students/create-student-details/", {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/students/create-student-details/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

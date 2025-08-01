@@ -94,7 +94,7 @@ const LoginPage = () => {
 
     try {
       const response = await axios.post(
-        "http://139.59.69.37:8080/mawhiba/api/v1/accounts/login/",
+        `${import.meta.env.VITE_API_BASE_URL}/accounts/login/`,
         {
           email: credentials.email,
           password: credentials.password,
