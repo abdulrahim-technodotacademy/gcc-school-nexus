@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { GraduationCap, User, Lock, Building, X } from "lucide-react";
+import { api } from "@/utils/axiosInterceptor";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import Navigation from "@/components/layout/Navigation";
@@ -31,6 +32,9 @@ interface TokenPayload {
   is_otp_enabled: boolean;
   permissions: string[];
 }
+
+// Token refresh threshold (5 minutes before expiration)
+const REFRESH_THRESHOLD = 5 * 60 * 1000;
 
 const userRoles = [
   {
@@ -68,13 +72,22 @@ const LoginPage = () => {
     password: "",
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [refreshTimeout, setRefreshTimeout] = useState<NodeJS.Timeout | null>(null);
+
+  // Clean up timeouts when component unmounts
+  useEffect(() => {
+    return () => {
+      if (refreshTimeout) {
+        clearTimeout(refreshTimeout);
+      }
+    };
+  }, [refreshTimeout]);
 
   const handleRoleClick = (role: string) => {
     if (role === "Addmission") {
       navigate("/student/addmission");
     } else {
       setActiveRole(role);
-      // Reset credentials when changing role
       setCredentials({
         email: "",
         password: "",
@@ -93,50 +106,101 @@ const LoginPage = () => {
     }
 
     try {
-      const response = await axios.post(
-        `${import.meta.env.VITE_API_BASE_URL}/accounts/login/`,
-        {
-          email: credentials.email,
-          password: credentials.password,
-        }
-      );
+      const response = await api.post("/accounts/login/", {
+        email: credentials.email,
+        password: credentials.password,
+      });
 
       const { access, refresh } = response.data;
-      
-      // Decode the refresh token to get user information
-      const decoded: TokenPayload = jwtDecode(refresh);
-      
-      // Store tokens in localStorage or cookies
+      const decoded: TokenPayload = jwtDecode(access); // Decode access token for expiration
+
+      // Store tokens and user data
       localStorage.setItem("accessToken", access);
       localStorage.setItem("refreshToken", refresh);
       localStorage.setItem("userData", JSON.stringify(decoded));
 
+      // Schedule token refresh before expiration
+      scheduleTokenRefresh(decoded.exp, refresh);
+
       toast.success(`Welcome ${decoded.first_name}!`);
+      redirectBasedOnRole(decoded.role);
 
-      // Redirect based on role
-      switch (decoded.role) {
-        case "Registration Officer":
-          navigate("/dashboard/registration");
-          break;
-        case "Financial Agreement Officer":
-          navigate("/dashboard/financial");
-          break;
-        case "Accountant":
-          navigate("/dashboard/admin");
-          break;
-        case "Accountant Controller":
-          navigate("/dashboard/accountant");
-          break;
-        default:
-          navigate("/dashboard");
-      }
-
-    } catch (error) {
-      console.error("Login error:", error);
-      toast.error("Invalid email or password");
-    } finally {
+    }catch (error) {
+  console.error("Login error:", error);
+  if (axios.isAxiosError(error)) {  // Added missing parenthesis here
+    toast.error(error.response?.data?.detail || "Invalid email or password");
+  } else {
+    toast.error("Login failed. Please try again.");
+  }
+} finally {
       setIsLoading(false);
       setActiveRole(null);
+    }
+  };
+
+  const scheduleTokenRefresh = (expirationTime: number, refreshToken: string) => {
+    // Clear any existing timeout
+    if (refreshTimeout) {
+      clearTimeout(refreshTimeout);
+    }
+
+    const now = Date.now();
+    const expiresAt = expirationTime * 1000; // Convert to milliseconds
+    const timeUntilRefresh = expiresAt - now - REFRESH_THRESHOLD;
+
+    if (timeUntilRefresh > 0) {
+      const timeout = setTimeout(() => {
+        refreshTokenSilently(refreshToken);
+      }, timeUntilRefresh);
+
+      setRefreshTimeout(timeout);
+    } else {
+      // Token is already expired or about to expire, refresh immediately
+      refreshTokenSilently(refreshToken);
+    }
+  };
+
+  const refreshTokenSilently = async (refreshToken: string) => {
+    try {
+      const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/accounts/token/refresh/`, {
+        refresh: refreshToken,
+      });
+
+      const newAccessToken = response.data.access;
+      localStorage.setItem("accessToken", newAccessToken);
+
+      // Decode new token and schedule next refresh
+      const decoded: TokenPayload = jwtDecode(newAccessToken);
+      scheduleTokenRefresh(decoded.exp, refreshToken);
+
+    } catch (error) {
+      console.error("Token refresh failed:", error);
+      // If refresh fails, try again after 1 minute
+      setTimeout(() => {
+        const storedRefresh = localStorage.getItem("refreshToken");
+        if (storedRefresh) {
+          refreshTokenSilently(storedRefresh);
+        }
+      }, 60000);
+    }
+  };
+
+  const redirectBasedOnRole = (role: string) => {
+    switch (role) {
+      case "Registration Officer":
+        navigate("/dashboard/registration");
+        break;
+      case "Financial Agreement Officer":
+        navigate("/dashboard/financial");
+        break;
+      case "Accountant":
+        navigate("/dashboard/admin");
+        break;
+      case "Accountant Controller":
+        navigate("/dashboard/accountant");
+        break;
+      default:
+        navigate("/dashboard");
     }
   };
 
@@ -210,10 +274,7 @@ const LoginPage = () => {
                   className="space-y-4"
                 >
                   <div className="space-y-2">
-                    <Label
-                      htmlFor="email"
-                      className="flex items-center gap-2"
-                    >
+                    <Label htmlFor="email" className="flex items-center gap-2">
                       <User className="h-4 w-4" />
                       Email | البريد الإلكتروني
                     </Label>
@@ -233,10 +294,7 @@ const LoginPage = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label
-                      htmlFor="password"
-                      className="flex items-center gap-2"
-                    >
+                    <Label htmlFor="password" className="flex items-center gap-2">
                       <Lock className="h-4 w-4" />
                       Password | كلمة المرور
                     </Label>

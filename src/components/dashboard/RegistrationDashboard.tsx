@@ -42,7 +42,12 @@ type Student = {
   place_of_birth: string;
   religion: string;
   currentClass: string;
+  selectedDepartment: string;
+  selectedSection: string;
+  currentSection: string;
+  filteredSections: any;
   nextClass: string;
+  nextSection: string;
   status: "pending" | "verified" | "rejected";
   registrationDate: string;
   isNewRegistration?: boolean;
@@ -64,6 +69,12 @@ type Student = {
 };
 
 
+type Department = {
+  id: string;
+   department_name: string;
+};
+
+
 
 const RegistrationDashboard = () => {
   const navigate = useNavigate();
@@ -71,9 +82,15 @@ const RegistrationDashboard = () => {
     "new"
   );
    const [departments, setDepartments] = useState<Department[]>([]);
+   const [sections, setSections] = useState([]);
   const [classList, setClassList] = useState<string[]>([]);
   const [selectedClass, setSelectedClass] = useState<string>("");
   const [students, setStudents] = useState<Student[]>([]);
+
+    const [filteredSections, setFilteredSections] = useState([]);
+    const [selectedDepartment, setSelectedDepartment] = useState('');
+    const [selectedSection, setSelectedSection] = useState('');
+
   const [selectedStudents, setSelectedStudents] = useState<
     Record<string, boolean>
   >({});
@@ -103,7 +120,7 @@ const loadStudents = async () => {
 
     const response = await fetch(
     //   `${import.meta.env.VITE_API_BASE_URL}/students/student/`,
-      `${import.meta.env.VITE_API_BASE_URL}/students/get-studentdetails-all/?is_verified_registration_officer=true`,
+      `${import.meta.env.VITE_API_BASE_URL}/students/get-studentdetails-all/`,
       {
         method: "GET",
         headers: {
@@ -117,6 +134,8 @@ const loadStudents = async () => {
     }
 
       const result = await response.json();
+      console.log(result.data);
+      
       const studentsData: Student[] = result.data.map((student: any, index: number) => ({
       id: student.id,
       name_en: `${student.en_first_name} ${student.en_middle_name ?? ""} ${student.en_last_name}`.trim(),
@@ -127,7 +146,9 @@ const loadStudents = async () => {
       place_of_birth: student.city, // or use student.address if preferred
       religion: student.religion,
       currentClass: student.admission_class?.department_name || "Unknown",
+      currentSection: student.section?.name || "Unknown",
       nextClass: "", // Optional: Update this if logic is available
+      nextSection: "",
       status: student.is_verified_registration_officer ? "verified" : "pending",
       registrationDate: student.admission_date,
       isNewRegistration: true,
@@ -163,67 +184,6 @@ const loadStudents = async () => {
 
 
 
-// const loadStudents = async () => {
-//   setLoading(true);
-
-//   try {
-//      const token = localStorage.getItem("accessToken"); 
-//     const response = await fetch(
-//     //   `${import.meta.env.VITE_API_BASE_URL}/students/student/`,
-//       `${import.meta.env.VITE_API_BASE_URL}/students/get-studentdetails-all/?is_verified_registration_officer=false`,
-//       {
-//         method: "GET",
-//         headers: {
-//           "Content-Type": "application/json",
-//           Authorization: `Bearer ${token}`, // <-- Add token here
-//         },
-//       }
-//     );
-//     if (!response.ok) {
-//       throw new Error("Failed to fetch students from API");
-//     }
-
-//       const result = await response.json();
-
-//     if (!result.status) {
-//       throw new Error(result.message || "API responded with an error");
-//     }
-// console.log(result.data);
-
-//     // Convert response to Student[] type
-//    const apiStudents: Student[] = result.data.map((student: any, index: number) => ({
-//       id: student.id,
-//       name_en: `${student.en_first_name} ${student.en_middle_name ?? ""} ${student.en_last_name}`.trim(),
-//       name_ar: `${student.ar_first_name} ${student.ar_middle_name ?? ""} ${student.ar_last_name}`.trim(),
-//       date_of_birth: student.date_of_birth,
-//       gender: student.gender === "M" ? "Male" : "Female",
-//       nationality: student.nationality,
-//       place_of_birth: student.city, // or you can use student.address
-//       religion: student.religion,
-//       currentClass: student.admission_class?.department_name || "Unknown",
-//       nextClass: "Pending", // You can compute this later
-//       status: student.is_verified_registration_officer ? "verified" : "pending",
-//       registrationDate: student.admission_date,
-//       isNewRegistration: true,
-//       guardian: student.guardian,
-//       documents: [], // If documents are available, map them here
-//     }));
-
-    
-
-//     // Optionally merge with mockStudents if needed
-//     const allStudents = [...apiStudents];
-
-//     setStudents(allStudents);
-//   } catch (error) {
-//     console.error("Error loading students:", error);
-//   } finally {
-//     setLoading(false);
-//   }
-// };
-
-
-
  const fetchDepartments = async () => {
     setLoading(true);
     const token = localStorage.getItem("accessToken");
@@ -242,7 +202,9 @@ const loadStudents = async () => {
       }
 
       const data = await res.json();
-      setDepartments(data);
+      console.log(data.data);
+      
+      setDepartments(data.data);
     } catch (err: any) {
       console.error(err.message || "Something went wrong");
     } finally {
@@ -250,8 +212,38 @@ const loadStudents = async () => {
     }
   };
 
+
+  const fetchSections = async () => {
+  setLoading(true);
+  const token = localStorage.getItem("accessToken");
+
+  try {
+    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/students/section/`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch sections");
+    }
+
+    const result = await response.json();
+    console.log("Sections:", result.data);
+    setSections(result.data); // assuming you have: const [sections, setSections] = useState([])
+  } catch (error: any) {
+    console.error(error.message || "Something went wrong while fetching sections");
+  } finally {
+    setLoading(false);
+  }
+};
+
+
   useEffect(() => {
     fetchDepartments();
+      fetchSections();
     if (activeTab === "search" || activeTab === "promotion") {
       loadStudents();
     }
@@ -265,6 +257,13 @@ const loadStudents = async () => {
     setStudents(filteredStudents);
     setSelectedStudents({});
   };
+
+  const handleDepartmentChange = (e) => {
+  const deptId = e.target.value;
+  setSelectedDepartment(deptId);
+  const filtered = sections.filter(sec => sec.department === deptId);
+  setFilteredSections(filtered);
+};
 
 const verifyStudent = async (studentId: string) => {
   setLoading(true);
@@ -304,22 +303,48 @@ const verifyStudent = async (studentId: string) => {
     setLoading(false);
   }
 };
+const rejectStudent = async (studentId: string) => {
+  setLoading(true);
+
+  try {
+    const token = localStorage.getItem("accessToken");
+
+    const response = await fetch(
+      `${import.meta.env.VITE_API_BASE_URL}/students/student/${studentId}/`,
+      {
+        method: "PATCH", // or "PUT" if your backend expects full replacement
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          is_deleted: true,
+          is_active: true,
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error("Failed to verify student");
+    }
+
+    // Optional: update UI immediately
+    setStudents((prev) =>
+      prev.map((student) =>
+        student.id === studentId
+          ? { ...student, status: "rejected" }
+          : student
+      )
+    );
+  } catch (error) {
+    console.error("Error verifying student:", error);
+  } finally {
+    setLoading(false);
+  }
+};
 
 
-  const rejectStudent = (studentId: string) => {
-    setLoading(true);
-    setTimeout(() => {
-      setStudents(
-        students.map((student) =>
-          student.id === studentId
-            ? { ...student, status: "rejected" }
-            : student
-        )
-      );
-      setLoading(false);
-      clearVerifiedRegistrations();
-    }, 300);
-  };
+
 
   const clearVerifiedRegistrations = () => {
     const storedRegistrations = localStorage.getItem("studentRegistrations");
@@ -341,48 +366,26 @@ const verifyStudent = async (studentId: string) => {
     }
   };
 
-//   const promoteStudents = async () => {
-//     setLoading(true);
-//     const studentIds = Object.keys(selectedStudents).filter(
-//       (id) => selectedStudents[id]
-//     );
-
-//     setTimeout(() => {
-//       console.log("Promoting students:", studentIds);
-//       setLoading(false);
-//       setSelectedStudents({});
-//       alert(`${studentIds.length} students promoted successfully!`);
-//       handleClassChange(selectedClass);
-//     }, 1000);
-//   };
 
 
+const promoteStudent = async (studentId: string, newClass: string, newSection: string) => {
 
-const promoteStudent = async (studentId: string, newClass: string) => {
-
-  console.log("Promoting student:", studentId, "to class:", newClass);
-
-  const student = students.find((s) => s.id === studentId);
-  
-
-  console.log("Promoting student:", studentId, "to class:", newClass);
-  
+  console.log("Promoting student:", studentId, "to class:", newClass , newSection);
 
   const token = localStorage.getItem("accessToken");
 
   try {
     const res = await fetch(
-      `${import.meta.env.VITE_API_BASE_URL}/students/student/${studentId}/`,
+      `${import.meta.env.VITE_API_BASE_URL}/students/students/promote/${studentId}/`,
       {
-        method: "PATCH",
+        method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          admission_class: {
-            department_name: newClass,
-          },
+            admission_class: newClass,
+            section: newSection
         }),
       }
     );
@@ -538,7 +541,7 @@ const promoteStudent = async (studentId: string, newClass: string) => {
                             </span>
                           )}
                         </TableCell>
-                        <TableCell>{student.currentClass}</TableCell>
+                        <TableCell>{student.currentClass} {student.currentSection}</TableCell>
                         <TableCell>{student.registrationDate}</TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">
@@ -622,28 +625,6 @@ const promoteStudent = async (studentId: string, newClass: string) => {
                     ))}
                   </SelectContent>
                 </Select>
-
-                {/* <Button
-                  onClick={promoteStudents}
-                  disabled={
-                    Object.values(selectedStudents).filter(Boolean).length ===
-                      0 || loading
-                  }
-                  className="gap-2"
-                >
-                  {loading ? (
-                    <>
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      Processing...
-                    </>
-                  ) : (
-                    <>
-                      <ChevronUp className="h-4 w-4" />
-                      Promote Selected (
-                      {Object.values(selectedStudents).filter(Boolean).length})
-                    </>
-                  )}
-                </Button> */}
               </div>
 
               {selectedClass ? (
@@ -651,26 +632,10 @@ const promoteStudent = async (studentId: string, newClass: string) => {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        {/* <TableHead className="w-[50px]">
-                          <Checkbox
-                            checked={filteredStudents.every(
-                              (s) => selectedStudents[s.id]
-                            )}
-                            onCheckedChange={() => {
-                              const allSelected = filteredStudents.every(
-                                (s) => selectedStudents[s.id]
-                              );
-                              const newSelection = { ...selectedStudents };
-                              filteredStudents.forEach((student) => {
-                                newSelection[student.id] = !allSelected;
-                              });
-                              setSelectedStudents(newSelection);
-                            }}
-                          />
-                        </TableHead> */}
                         <TableHead>Student Name</TableHead>
                         <TableHead>Current Class</TableHead>
                         <TableHead>Next Class</TableHead>
+                        <TableHead>Next Section</TableHead>
                         <TableHead>Status</TableHead>
                         <TableHead className="text-right">Action</TableHead>
                       </TableRow>
@@ -678,17 +643,6 @@ const promoteStudent = async (studentId: string, newClass: string) => {
                     <TableBody>
                       {filteredStudents.map((student) => (
                         <TableRow key={student.id}>
-                          {/* <TableCell>
-                            <Checkbox
-                              checked={!!selectedStudents[student.id]}
-                              onCheckedChange={() => {
-                                setSelectedStudents((prev) => ({
-                                  ...prev,
-                                  [student.id]: !prev[student.id],
-                                }));
-                              }}
-                            />
-                          </TableCell> */}
                           <TableCell>
                             {student.name_en}
                             {student.isNewRegistration && (
@@ -697,32 +651,61 @@ const promoteStudent = async (studentId: string, newClass: string) => {
                               </span>
                             )}
                           </TableCell>
-                          <TableCell>{student.currentClass}</TableCell>
-                          <TableCell>
-                            <Select
-                                value={student.nextClass}
-                                onValueChange={(value) => {
-                                const updatedStudents = students.map((s) =>
-                                    s.id === student.id ? { ...s, nextClass: value } : s
-                                );
-                                setStudents(updatedStudents);
-                                }}
-                            >
-                                <SelectTrigger className="w-[130px] md:w-[180px] text-sm">
-                                <SelectValue placeholder="Select class" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                {departments.map((dept) => (
-                                    <SelectItem key={dept.id} value={dept.department_name}>
-                                    {dept.department_name}
-                                    </SelectItem>
-                                ))}
-                                </SelectContent>
-                            </Select>
-                            </TableCell>
+                          <TableCell>{student.currentClass} {student.currentSection}</TableCell>
+                         
+                            <TableCell>
+                                <Select
+                                    value={student.selectedDepartment || ""}
+                                    onValueChange={(value) => {
+                                    const updatedStudents = students.map((s) =>
+                                        s.id === student.id
+                                        ? {
+                                            ...s,
+                                            selectedDepartment: value,
+                                            filteredSections: sections.filter((sec) => sec.department === value),
+                                            selectedSection: "", // reset section
+                                            }
+                                        : s
+                                    );
+                                    setStudents(updatedStudents);
+                                    }}
+                                >
+                                    <SelectTrigger className="w-[120px] md:w-[180px] text-sm">
+                                    <SelectValue placeholder="Select Department" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                    {departments.map((dept) => (
+                                        <SelectItem key={dept.id} value={dept.id}>
+                                        {dept.department_name}
+                                        </SelectItem>
+                                    ))}
+                                    </SelectContent>
+                                </Select>
+                                </TableCell>
 
 
-
+                                <TableCell>
+                        <Select
+                            value={student.selectedSection || ""}
+                            onValueChange={(value) => {
+                            const updatedStudents = students.map((s) =>
+                                s.id === student.id ? { ...s, selectedSection: value } : s
+                            );
+                            setStudents(updatedStudents);
+                            }}
+                        >
+                            <SelectTrigger className="w-[120px] md:w-[180px] text-sm">
+                            <SelectValue placeholder="Select Section" />
+                            </SelectTrigger>
+                            <SelectContent>
+                            {(student.filteredSections || []).map((sec) => (
+                                <SelectItem key={sec.id} value={sec.id}>
+                                {sec.name}
+                                </SelectItem>
+                            ))}
+                            </SelectContent>
+                        </Select>
+                        </TableCell>
 
                           <TableCell>
                             <span
@@ -742,7 +725,7 @@ const promoteStudent = async (studentId: string, newClass: string) => {
                                 variant="outline"
                                 size="sm"
                                 onClick={() => {
-                                    promoteStudent(student.id, student.nextClass);
+                                    promoteStudent(student.id, student.selectedDepartment, student.selectedSection);
                                 }}
                                 disabled={loading || student.status !== "verified"}
                                 >
@@ -766,38 +749,13 @@ const promoteStudent = async (studentId: string, newClass: string) => {
                   </div>
                 )
               ) : (
-                // <div className="text-center py-8 text-gray-500">
-                //   <Users className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                //   <h3 className="text-xl font-semibold text-gray-700 mb-2">
-                //     Student Promotion System
-                //   </h3>
-                //   <p className="text-gray-500 mb-6">
-                //     Select a class to view students available for promotion
-                //   </p>
-                // </div>
                    <Table>
                     <TableHeader>
                       <TableRow>
-                        {/* <TableHead className="w-[50px]">
-                          <Checkbox
-                            checked={filteredStudents.every(
-                              (s) => selectedStudents[s.id]
-                            )}
-                            onCheckedChange={() => {
-                              const allSelected = filteredStudents.every(
-                                (s) => selectedStudents[s.id]
-                              );
-                              const newSelection = { ...selectedStudents };
-                              filteredStudents.forEach((student) => {
-                                newSelection[student.id] = !allSelected;
-                              });
-                              setSelectedStudents(newSelection);
-                            }}
-                          />
-                        </TableHead> */}
                         <TableHead>Student Name</TableHead>
                         <TableHead>Current Class</TableHead>
                         <TableHead>Next Class</TableHead>
+                        <TableHead>Next Section</TableHead>
                         <TableHead>Status</TableHead>
                         <TableHead className="text-right">Action</TableHead>
                       </TableRow>
@@ -805,17 +763,6 @@ const promoteStudent = async (studentId: string, newClass: string) => {
                     <TableBody>
                       {filteredStudents.map((student) => (
                         <TableRow key={student.id}>
-                          {/* <TableCell>
-                            <Checkbox
-                              checked={!!selectedStudents[student.id]}
-                              onCheckedChange={() => {
-                                setSelectedStudents((prev) => ({
-                                  ...prev,
-                                  [student.id]: !prev[student.id],
-                                }));
-                              }}
-                            />
-                          </TableCell> */}
                           <TableCell>
                             {student.name_en}
                             {student.isNewRegistration && (
@@ -824,8 +771,58 @@ const promoteStudent = async (studentId: string, newClass: string) => {
                               </span>
                             )}
                           </TableCell>
-                          <TableCell>{student.currentClass}</TableCell>
-                          <TableCell>{student.nextClass}</TableCell>
+                          <TableCell>{student.currentClass} {student.currentSection}</TableCell>
+                            <TableCell>
+                            <Select
+                                value={student.selectedDepartment || ""}
+                                onValueChange={(value) => {
+                                const updatedStudents = students.map((s) =>
+                                    s.id === student.id
+                                    ? {
+                                        ...s,
+                                        selectedDepartment: value,
+                                        filteredSections: sections.filter((sec) => sec.department === value),
+                                        selectedSection: "", // reset section
+                                        }
+                                    : s
+                                );
+                                setStudents(updatedStudents);
+                                }}
+                            >
+                                <SelectTrigger className="w-[120px] md:w-[180px] text-sm">
+                                <SelectValue placeholder="Select Department" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                {departments.map((dept) => (
+                                    <SelectItem key={dept.id} value={dept.id}>
+                                    {dept.department_name}
+                                    </SelectItem>
+                                ))}
+                                </SelectContent>
+                            </Select>
+                            </TableCell>
+                            <TableCell>
+                            <Select
+                                value={student.selectedSection || ""}
+                                onValueChange={(value) => {
+                                const updatedStudents = students.map((s) =>
+                                    s.id === student.id ? { ...s, selectedSection: value } : s
+                                );
+                                setStudents(updatedStudents);
+                                }}
+                            >
+                                <SelectTrigger className="w-[120px] md:w-[180px] text-sm">
+                                <SelectValue placeholder="Select Section" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                {(student.filteredSections || []).map((sec) => (
+                                    <SelectItem key={sec.id} value={sec.id}>
+                                    {sec.name}
+                                    </SelectItem>
+                                ))}
+                                </SelectContent>
+                            </Select>
+                            </TableCell>
                           <TableCell>
                             <span
                               className={`px-2 py-1 rounded-full text-xs ${
@@ -844,7 +841,8 @@ const promoteStudent = async (studentId: string, newClass: string) => {
                                 variant="outline"
                                 size="sm"
                                 onClick={() => {
-                                    promoteStudent(student.id, student.nextClass);
+                                    promoteStudent(student.id, student.selectedDepartment, student.selectedSection);
+
                                 }}
                                 disabled={loading || student.status !== "verified"}
                                 >

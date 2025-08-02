@@ -183,6 +183,9 @@ const [houseNumber, setHouseNumber] = useState('');
 const [residenceAddress, setResidenceAddress] = useState('');
 const [isSubmitting, setIsSubmitting] = useState(false);
 const [submitError, setSubmitError] = useState('');
+const [guardianSignaturePad, setGuardianSignaturePad] = useState(null);
+const [employerSignaturePad, setEmployerSignaturePad] = useState(null);
+
 
   // Load initial data
 // Update your useEffect hook for fetching data:
@@ -938,25 +941,45 @@ const convertToWords = (num: number): string => {
             </Button>
           </div>
 
-          {/* Signature Pad */}
-          <div className="border rounded-lg p-4">
-            <Label>Signature</Label>
-            <div className="border-2 border-dashed rounded-lg h-48 w-full">
-              <SignaturePad 
-                canvasProps={{ className: 'w-full h-full' }}
-                ref={(ref) => setSignaturePad(ref)}
-              />
-            </div>
-            <div className="flex justify-end mt-2">
-              <Button 
-                variant="outline" 
-                onClick={() => signaturePad?.clear()}
-                className="mr-2"
-              >
-                Clear
-              </Button>
-            </div>
-          </div>
+         {/* Guardian Signature Pad */}
+<div className="border rounded-lg p-4 mb-6">
+  <Label>Guardian Signature</Label>
+  <div className="border-2 border-dashed rounded-lg h-48 w-full">
+    <SignaturePad 
+      canvasProps={{ className: 'w-full h-full' }}
+      ref={(ref) => setGuardianSignaturePad(ref)}
+    />
+  </div>
+  <div className="flex justify-end mt-2">
+    <Button 
+      variant="outline" 
+      onClick={() => guardianSignaturePad?.clear()}
+      className="text-gray-500 hover:text-gray-700"
+    >
+      Clear
+    </Button>
+  </div>
+</div>
+
+{/* Employer Signature Pad */}
+<div className="border rounded-lg p-4">
+  <Label>Employer Signature</Label>
+  <div className="border-2 border-dashed rounded-lg h-48 w-full">
+    <SignaturePad 
+      canvasProps={{ className: 'w-full h-full' }}
+      ref={(ref) => setEmployerSignaturePad(ref)}
+    />
+  </div>
+  <div className="flex justify-end mt-2">
+    <Button 
+      variant="outline" 
+      onClick={() => employerSignaturePad?.clear()}
+      className="text-gray-500 hover:text-gray-700"
+    >
+      Clear
+    </Button>
+  </div>
+</div>
 
           {/* Submit Signature Button */}
           <div className="flex justify-end gap-4">
@@ -970,108 +993,139 @@ const convertToWords = (num: number): string => {
               Cancel
             </Button>
 
-<Button 
+ <Button
   className="bg-green-600 hover:bg-green-700"
   onClick={async () => {
-    if (!signaturePad || !currentSigningAgreement?.rawData?.financial_agreement?.id) return;
-    
+    if (!guardianSignaturePad || !employerSignaturePad || 
+        !currentSigningAgreement?.rawData?.financial_agreement?.id) {
+      return;
+    }
+
+    // Check if both signatures are empty
+    if (guardianSignaturePad.isEmpty() || employerSignaturePad.isEmpty()) {
+      alert('Please provide both guardian and employer signatures');
+      return;
+    }
+
     try {
       const accessToken = localStorage.getItem("accessToken");
       if (!accessToken) throw new Error('Authentication required');
       
       const agreementId = currentSigningAgreement.rawData.financial_agreement.id;
 
-      // 1. Download the original PDF
+      // 1. Download original PDF
       const pdfResponse = await fetch(
         `${import.meta.env.VITE_API_BASE_URL}/students/financial-agreement-pdf-download/${agreementId}/`,
-        {
-          headers: {
-            "Authorization": `Bearer ${accessToken}`,
-          }
-        }
+        { headers: { "Authorization": `Bearer ${accessToken}` } }
       );
-
       if (!pdfResponse.ok) throw new Error('Failed to download PDF');
-      
-      // 2. Load PDF and embed signature
-      const pdfBytes = await pdfResponse.arrayBuffer();
-      const pdfDoc = await PDFDocument.load(pdfBytes);
-      
-      // 3. Convert signature to PNG image
-      const signaturePngUrl = signaturePad.toDataURL();
-      const pngImageBytes = await fetch(signaturePngUrl)
-        .then(res => res.arrayBuffer());
-      const signatureImage = await pdfDoc.embedPng(pngImageBytes);
-      
-      // 4. Find the correct page (second page based on sample)
+
+      // 2. Convert signatures to images with white background
+      const convertSignature = (signaturePad) => {
+        const signatureCanvas = signaturePad.getCanvas();
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = signatureCanvas.width;
+        tempCanvas.height = signatureCanvas.height;
+        
+        const ctx = tempCanvas.getContext('2d');
+        ctx.fillStyle = 'white';
+        ctx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+        ctx.drawImage(signatureCanvas, 0, 0);
+        
+        return tempCanvas.toDataURL('image/png');
+      };
+
+      const guardianSignatureUrl = convertSignature(guardianSignaturePad);
+      const employerSignatureUrl = convertSignature(employerSignaturePad);
+
+      const [guardianPngBytes, employerPngBytes] = await Promise.all([
+        fetch(guardianSignatureUrl).then(res => res.arrayBuffer()),
+        fetch(employerSignatureUrl).then(res => res.arrayBuffer())
+      ]);
+
+      // 3. Load PDF and add both signatures
+// 3. Load PDF and add both signatures with proper positioning
+      const pdfDoc = await PDFDocument.load(await pdfResponse.arrayBuffer());
+      const guardianImage = await pdfDoc.embedPng(guardianPngBytes);
+      const employerImage = await pdfDoc.embedPng(employerPngBytes);
+
       const pages = pdfDoc.getPages();
-      if (pages.length < 2) throw new Error('PDF missing signature page');
-      
-      // Use the second page (index 1) where signatures should go
-      const signaturePage = pages[1];
-      const { width, height } = signaturePage.getSize();
-      
-      // 5. Position signature at the designated area (adjust these values)
-      // Based on sample PDF, place near the "توقيع ولي الأمر" area
-      signaturePage.drawImage(signatureImage, {
-        x: width - 250,  // Adjusted from 200 to 250
-        y: 100,          // Increased from 50 to 100
-        width: 150,
-        height: 50,
+      const page = pages[1]; // Second page for signatures
+      const { width, height } = page.getSize();
+            
+      page.drawImage(guardianImage, {
+        x: 50,           // Left position (reduced from 100)
+        y: 180,          // Vertical position (same as before)
+        width: 120,      // Signature width
+        height: 50,      // Signature height
       });
 
-      // 6. Save the modified PDF
+      // Employer signature position (right side)
+      page.drawImage(employerImage, {
+        x: width - 170,  // Right position (page width - signature width - margin)
+        y: 180,          // Vertical position aligned with guardian
+        width: 120,      // Signature width
+        height: 50,      // Signature height
+      });
+
+      // 4. Save and verify before upload
       const signedPdfBytes = await pdfDoc.save();
+      const blob = new Blob([signedPdfBytes], { type: 'application/pdf' });
       
-      // 7. Create FormData for upload
-      const formData = new FormData();
-      formData.append('file', new Blob([signedPdfBytes], { type: 'application/pdf' }), 'signed_agreement.pdf');
-      formData.append('is_verified_agreement_pdf', 'true');
+      // DEBUG: Force download for verification
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'signed_agreement_preview.pdf';
+      a.click();
 
-      // 8. Upload signed PDF
-      const response = await fetch(
-        `${import.meta.env.VITE_API_BASE_URL}/students/financial-agreement/${agreementId}/`,
-        {
-          method: "PATCH",
-          headers: {
-            "Authorization": `Bearer ${accessToken}`,
-          },
-          body: formData,
-        }
-      );
+      // 5. Upload after manual verification
+      const pdfname = `FA-${new Date().getFullYear()}-${Math.floor(Math.random() * 9000 + 1000)}`;
+       const formData = new FormData();
+       formData.append('agreement_pdf', blob, `signed_agreement_${pdfname.replace(/\//g, '-')}.pdf`);
+        formData.append('is_verified_agreement_pdf', 'true'); // Set to false here
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Signature submission failed');
-      }
+        const response = await fetch(
+          `${import.meta.env.VITE_API_BASE_URL}/students/financial-agreement/${agreementId}/`,
+          {
+            method: "PATCH",
+            headers: { "Authorization": `Bearer ${accessToken}` },
+            body: formData,
+          }
+        );
 
-      // Update UI state
-      const updatedStudents = pendingStudents.map(student => 
-        student.financial_agreement?.id === agreementId ? {
-          ...student,
-          financial_agreement: {
-            ...student.financial_agreement,
-            is_verified_agreement_pdf: true
-          },
-          status: 'signed',
-          statusAr: 'تم التوقيع'
-        } : student
-      );
-            
-      setPendingStudents(updatedStudents);
-      setIsSigning(false);
-      setCurrentSigningAgreement(null);
-      signaturePad.clear();
-      
-      alert('PDF signed and submitted successfully!');
+        if (!response.ok) throw new Error('Upload failed');
+        
+        // Update UI state
+        const updatedStudents = pendingStudents.map(student => 
+          student.financial_agreement?.id === agreementId ? {
+            ...student,
+            financial_agreement: { 
+              ...student.financial_agreement, 
+              is_verified_agreement_pdf: true // Also set to false in UI state
+            },
+            status: 'signed',
+            statusAr: 'تم التوقيع'
+          } : student
+        );
+        
+        setPendingStudents(updatedStudents);
+        setIsSigning(false);
+        setCurrentSigningAgreement(null);
+        guardianSignaturePad.clear();
+        employerSignaturePad.clear();
+        
+        alert('PDF successfully submitted!');
+       
+    
     } catch (error) {
       console.error('Error:', error);
-      alert(`Error: ${error instanceof Error ? error.message : 'Failed to sign PDF'}`);
+      alert(`Error: ${error.message}`);
     }
   }}
 >
   <CheckCircle className="mr-2 h-4 w-4" />
-  {isSigning ? 'Signing...' : 'Confirm Signature'}
+  {isSigning ? 'Processing...' : 'Sign & Submit'}
 </Button>
           </div>
         </div>
@@ -1171,7 +1225,8 @@ const convertToWords = (num: number): string => {
                                     headers: {
                                       "Authorization": `Bearer ${accessToken}`,
                                     }
-                                  }
+                                  },
+                                  
                                 );
 
                                 if (!response.ok) throw new Error('Failed to download PDF');
