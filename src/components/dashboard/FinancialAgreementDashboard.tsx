@@ -1213,41 +1213,18 @@ const convertToWords = (num: number): string => {
                             <CheckCircle className="h-4 w-4 mr-1" />
                             <span>Signed</span>
                           </div>
-                          <Button 
-                            variant="outline"
-                            onClick={async () => {
-                              try {
-                                const accessToken = localStorage.getItem("accessToken");
-                                const agreementId = student.financial_agreement?.id;
-                                const response = await fetch(
-                                  `${import.meta.env.VITE_API_BASE_URL}/students/financial-agreement-pdf-download/${agreementId}/`,
-                                  {
-                                    headers: {
-                                      "Authorization": `Bearer ${accessToken}`,
-                                    }
-                                  },
-                                  
-                                );
+<Button
+  variant="outline"
+  onClick={() => {
+    const pdfUrl = `https://almawhiba.febnotech.com${student.financial_agreement.agreement_pdf}`;
+    window.open(pdfUrl, '_blank', 'noopener,noreferrer');
+  }}
+>
+  View PDF &  Download
+</Button>
 
-                                if (!response.ok) throw new Error('Failed to download PDF');
-                                
-                                const blob = await response.blob();
-                                const url = window.URL.createObjectURL(blob);
-                                const a = document.createElement('a');
-                                a.href = url;
-                                a.download = `signed_agreement_${agreementId}.pdf`;
-                                document.body.appendChild(a);
-                                a.click();
-                                window.URL.revokeObjectURL(url);
-                                a.remove();
-                              } catch (error) {
-                                console.error('Download failed:', error);
-                                alert('Failed to download signed agreement');
-                              }
-                            }}
-                          >
-                            Download Signed PDF
-                          </Button>
+
+
                         </div>
                       </div>
                     </CardContent>

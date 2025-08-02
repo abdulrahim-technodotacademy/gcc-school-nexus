@@ -369,13 +369,11 @@ const rejectStudent = async (studentId: string) => {
 
 
 const promoteStudent = async (studentId: string, newClass: string, newSection: string) => {
-
-  console.log("Promoting student:", studentId, "to class:", newClass , newSection);
-
   const token = localStorage.getItem("accessToken");
 
   try {
-    const res = await fetch(
+    // First API call - Promote the student
+    const promoteRes = await fetch(
       `${import.meta.env.VITE_API_BASE_URL}/students/students/promote/${studentId}/`,
       {
         method: "POST",
@@ -384,22 +382,59 @@ const promoteStudent = async (studentId: string, newClass: string, newSection: s
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-            admission_class: newClass,
-            section: newSection
+          admission_class: newClass,
+          section: newSection,
         }),
       }
     );
 
-    if (!res.ok) throw new Error("Failed to promote");
+    if (!promoteRes.ok) throw new Error("Failed to promote");
 
-   
-    await loadStudents(); // refresh
+    // Second API call - Set verification to false
+    const verifyRes = await fetch(
+      `${import.meta.env.VITE_API_BASE_URL}/students/student/${studentId}/`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          is_verified_registration_officer: false,
+        }),
+      }
+    );
+
+    if (!verifyRes.ok) throw new Error("Failed to update verification status");
+
+    // Update local state
+    setStudents(prev => prev.map(student => 
+      student.id === studentId 
+        ? { 
+            ...student, 
+            status: "pending",
+            currentClass: newClass,
+            currentSection: newSection,
+            selectedDepartment: "",
+            selectedSection: ""
+          } 
+        : student
+    ));
+
+    toast({
+      title: "Student Promoted",
+      description: "Student has been promoted and requires re-verification",
+    });
+
   } catch (err) {
     console.error(err);
-   
+    toast({
+      title: "Error",
+      description: "Failed to complete promotion process",
+      variant: "destructive",
+    });
   }
 };
-
 
 
   const filteredStudents = students.filter((student) => {
