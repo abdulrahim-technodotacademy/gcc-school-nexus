@@ -58,6 +58,7 @@ export default function StudentDetailsPage() {
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [departments, setDepartments] = useState<Department[]>([]);
+  const [isDownloading, setIsDownloading] = useState(false);
 
 
   const fetchDepartments = async () => {
@@ -67,6 +68,7 @@ export default function StudentDetailsPage() {
     try {
       const res = await fetch(
         `${import.meta.env.VITE_API_BASE_URL}/students/department/`,
+      
         {
           method: "GET",
           headers: {
@@ -260,6 +262,53 @@ const handleSave = async () => {
     link.click();
     document.body.removeChild(link);
   };
+
+  const handleDownloadApplication = async () => {
+    if (!id) return;
+    
+    setIsDownloading(true);
+    try {
+      const token = localStorage.getItem("accessToken");
+      const response = await fetch(
+        `${import.meta.env.VITE_API_BASE_URL}/students/students/${id}/download-application/`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to download application");
+      }
+
+      const contentDisposition = response.headers.get('content-disposition');
+      let filename = 'student_application.pdf';
+      if (contentDisposition) {
+        const filenameMatch = contentDisposition.match(/filename="?(.+)"?/);
+        if (filenameMatch && filenameMatch[1]) {
+          filename = filenameMatch[1];
+        }
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+
+    } catch (error) {
+      console.error("Download error:", error);
+      alert("Failed to download application. Please try again.");
+    } finally {
+      setIsDownloading(false);
+    }
+  };
   return (
     <div className="p-6 space-y-6">
       <div className="flex justify-between items-center">
@@ -278,6 +327,15 @@ const handleSave = async () => {
               </>
             )}
           </Button> */}
+
+           <Button 
+      variant="outline"
+      onClick={handleDownloadApplication}
+      className="flex items-center gap-1"
+    >
+      <DownloadIcon className="w-4 h-4 mr-2" />
+      Download Application
+    </Button>
 
           <Button variant="outline" onClick={() => window.history.back()}>
             Back to Dashboard

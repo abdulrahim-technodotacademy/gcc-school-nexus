@@ -20,6 +20,7 @@ import NewRegistrationForPublic from "./components/dashboard/NewRegistrationForP
 import StudentDetailsPage from "./components/dashboard/StudentDetailsPage";
 import StudentDetails from "./pages/dashboard/StudentDetails";
 import AuthWrapper from "./components/auth/AuthWrapper";
+import PublicRegistration from "./pages/PublicRegistration";
 
 
 
@@ -50,7 +51,7 @@ const App = () => (
           </Route>
   
      <Route path="/admin/login" element={<LoginModal />} />
-          <Route path="/student/newregisterforpublic" element={<NewRegistrationForPublic />} />
+          <Route path="/student/newregisterforpublic" element={<PublicRegistration />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
           

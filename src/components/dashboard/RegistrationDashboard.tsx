@@ -390,22 +390,6 @@ const promoteStudent = async (studentId: string, newClass: string, newSection: s
 
     if (!promoteRes.ok) throw new Error("Failed to promote");
 
-    // Second API call - Set verification to false
-    const verifyRes = await fetch(
-      `${import.meta.env.VITE_API_BASE_URL}/students/student/${studentId}/`,
-      {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          is_verified_registration_officer: false,
-        }),
-      }
-    );
-
-    if (!verifyRes.ok) throw new Error("Failed to update verification status");
 
     // Update local state
     setStudents(prev => prev.map(student => 

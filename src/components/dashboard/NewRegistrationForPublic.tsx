@@ -1,8 +1,11 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { countries } from 'countries-list';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PhoneInput } from 'react-international-phone';
+import 'react-international-phone/style.css';
 import {
   Select,
   SelectContent,
@@ -32,9 +35,8 @@ const GENDER_OPTIONS = [
   { value: "M", label: "Male | ذكر" },
   { value: "F", label: "Female | أنثى" },
 ];
-
 function NewRegistrationForPublic() {
- const [departments, setDepartments] = useState<
+  const [departments, setDepartments] = useState<
     Array<{
       id: string;
       department_name: string;
@@ -132,11 +134,7 @@ function NewRegistrationForPublic() {
       const accessToken = localStorage.getItem("accessToken");
       const response = await fetch(
         `${import.meta.env.VITE_API_BASE_URL}/students/department/`,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
+      
       );
       const data = await response.json();
       setDepartments(data.data || []);
@@ -155,11 +153,7 @@ function NewRegistrationForPublic() {
       const accessToken = localStorage.getItem("accessToken");
       const response = await fetch(
         `${import.meta.env.VITE_API_BASE_URL}/students/section/`,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
+ 
       );
       const data = await response.json();
       setAllSections(data.data || []);
@@ -209,8 +203,6 @@ const handleSubmit = async (e: React.FormEvent) => {
   }
 
   try {
-    const accessToken = localStorage.getItem("accessToken");
-    if (!accessToken) throw new Error("Authentication token not found");
 
     // 1. Build JSON objects
     const guardian = {
@@ -289,10 +281,6 @@ const handleSubmit = async (e: React.FormEvent) => {
     // 6. Submit request
     const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/students/create-student-details/`, {
       method: "POST",
-      headers: {
-        Authorization: `Bearer ${accessToken}`
-        // Do NOT set Content-Type manually
-      },
       body: form
     });
 
@@ -372,6 +360,14 @@ const handleSubmit = async (e: React.FormEvent) => {
     return age;
   };
 
+    const countryList = Object.entries(countries).map(([code, country]) => ({
+    code,
+    name: country.name
+    
+  }));
+
+  // Sort countries alphabetically
+  countryList.sort((a, b) => a.name.localeCompare(b.name));
 
 
   const removeDocument = (index: number) => {
@@ -382,6 +378,106 @@ const handleSubmit = async (e: React.FormEvent) => {
       student_documents: updatedDocs,
     });
   };
+
+
+
+
+const phoneticMap: { [key: string]: string } = {
+  sh: "ش", 
+  kh: "خ", 
+  th: "ث", 
+  dh: "ذ", 
+  gh: "غ",
+  ch: "تش", 
+  ph: "ف", 
+  zh: "ژ",
+  aa: "ع",
+  ee: "ي",
+  oo: "و",
+  ou: "و",
+  ai: "اي",
+  ei: "اي",
+  ay: "اي"
+};
+
+const charMap: { [key: string]: string } = {
+  // Basic letters
+  a: "ا", 
+  b: "ب", 
+  c: "ك", 
+  d: "د", 
+  e: "ي", 
+  f: "ف",
+  g: "ج", 
+  h: "ه", 
+  i: "ي", 
+  j: "ج", 
+  k: "ك", 
+  l: "ل",
+  m: "م", 
+  n: "ن", 
+  o: "و", 
+  p: "ب", 
+  q: "ق", 
+  r: "ر",
+  s: "س", 
+  t: "ت", 
+  u: "و", 
+  v: "ف", 
+  w: "و", 
+  x: "كس",
+  y: "ي", 
+  z: "ز",
+  
+  // Special characters
+  "'": "ء", 
+  "-": "-", 
+  " ": " ",
+  
+  // Vowel variations
+  á: "ا", 
+  â: "ا", 
+  à: "ا",
+  é: "ي", 
+  ê: "ي", 
+  è: "ي",
+  í: "ي", 
+  î: "ي", 
+  ì: "ي",
+  ó: "و", 
+  ô: "و", 
+  ò: "و",
+  ú: "و", 
+  û: "و", 
+  ù: "و",
+  ý: "ي",
+  
+  // Less common but possible in names
+  ç: "س", 
+  ñ: "ن", 
+  ü: "يو",
+  ß: "س", 
+  ø: "و", 
+  å: "و"
+};
+
+const transliterateToArabic = (input: string) => {
+  let result = "";
+  let i = 0;
+  const lower = input.toLowerCase();
+
+  while (i < lower.length) {
+    const twoChar = lower.substring(i, i + 2);
+    if (phoneticMap[twoChar]) {
+      result += phoneticMap[twoChar];
+      i += 2;
+      continue;
+    }
+    result += charMap[lower[i]] || lower[i];
+    i++;
+  }
+  return result;
+};
 
   return (
     <Card className="max-w-4xl mx-auto mt-20 p-6 bg-white shadow-lg">
@@ -435,95 +531,113 @@ const handleSubmit = async (e: React.FormEvent) => {
               </div>
 
               {/* English Name */}
-              <div>
+                            <div>
                 <Label htmlFor="en_first_name">
                   First Name (English) * | الاسم الأول (إنجليزي)
                 </Label>
                 <Input
                   id="en_first_name"
                   value={formData.en_first_name}
-                  onChange={(e) =>
-                    setFormData({ ...formData, en_first_name: e.target.value })
-                  }
-                  placeholder="First name in English"
+                  onChange={(e) => {
+                    const enName = e.target.value;
+                    setFormData({ 
+                      ...formData, 
+                      en_first_name: enName,
+                      ar_first_name: transliterateToArabic(enName) // Auto-translate
+                    });
+                  }}
+                  placeholder="e.g. Ahmed"
                   required
                 />
               </div>
 
-              <div>
-                <Label htmlFor="en_middle_name">
-                  Middle Name (English) | الاسم الأوسط (إنجليزي)
-                </Label>
-                <Input
-                  id="en_middle_name"
-                  value={formData.en_middle_name}
-                  onChange={(e) =>
-                    setFormData({ ...formData, en_middle_name: e.target.value })
-                  }
-                  placeholder="Middle name in English"
-                />
-              </div>
+                                            <div>
+                        <Label htmlFor="ar_first_name">
+                          First Name (Arabic) * | الاسم الأول (عربي)
+                        </Label>
+                        <Input
+                          id="ar_first_name"
+                          value={formData.ar_first_name}
+                          onChange={(e) => setFormData({ ...formData, ar_first_name: e.target.value })}
+                          placeholder="سيتم ملؤه تلقائياً"
+                          dir="rtl"
+                          required
+                        />
+                      </div>
 
-              <div>
-                <Label htmlFor="en_last_name">
-                  Last Name (English) | اسم العائلة (إنجليزي)
-                </Label>
-                <Input
-                  id="en_last_name"
-                  value={formData.en_last_name}
-                  onChange={(e) =>
-                    setFormData({ ...formData, en_last_name: e.target.value })
-                  }
-                  placeholder="Last name in English"
-                />
-              </div>
+<div>
+                          <Label htmlFor="en_middle_name">
+                            Middle Name (English) | الاسم الأوسط (إنجليزي)
+                          </Label>
+                          <Input
+                            id="en_middle_name"
+                            value={formData.en_middle_name}
+                            onChange={(e) => {
+                              const enName = e.target.value;
+                              setFormData({ 
+                                ...formData, 
+                                en_middle_name: enName,
+                                ar_middle_name: transliterateToArabic(enName) // Auto-translate
+                              });
+                            }}
+                            placeholder="Middle name in English"
+                          />
+                        </div>
+
+                        
+                                        <div>
+                              <Label htmlFor="en_middle_name">
+                                Middle Name (English) | الاسم الأوسط (إنجليزي)
+                              </Label>
+                          <Input
+                                id="ar_middle_name"
+                                value={formData.ar_middle_name}
+                                onChange={(e) => 
+                                  setFormData({ ...formData, ar_middle_name: e.target.value })
+                                }
+                                placeholder="سيتم ملؤه تلقائياً"
+                                dir="rtl"
+                                className={
+                                  formData.ar_middle_name !== transliterateToArabic(formData.en_middle_name) 
+                                    ? "border-blue-500" 
+                                    : ""
+                                }
+                              />
+                            </div>
+                       <div>
+                          <Label htmlFor="en_last_name">Last Name (English) | اسم العائلة (إنجليزي)</Label>
+                          <Input
+                            id="en_last_name"
+                            value={formData.en_last_name}
+                            onChange={(e) => {
+                              const enName = e.target.value;
+                              setFormData({ 
+                                ...formData, 
+                                en_last_name: enName,
+                                ar_last_name: transliterateToArabic(enName) // Auto-translate
+                              });
+                            }}
+                            placeholder="e.g. Khan"
+                          />
+                        </div>
+
+                        
+
+                       
 
               {/* Arabic Name */}
-              <div>
-                <Label htmlFor="ar_first_name">
-                  First Name (Arabic) * | الاسم الأول (عربي)
-                </Label>
-                <Input
-                  id="ar_first_name"
-                  value={formData.ar_first_name}
-                  onChange={(e) =>
-                    setFormData({ ...formData, ar_first_name: e.target.value })
-                  }
-                  placeholder="الاسم الأول بالعربية"
-                  dir="rtl"
-                  required
-                />
-              </div>
+      
 
-              <div>
-                <Label htmlFor="ar_middle_name">
-                  Middle Name (Arabic) | الاسم الأوسط (عربي)
-                </Label>
-                <Input
-                  id="ar_middle_name"
-                  value={formData.ar_middle_name}
-                  onChange={(e) =>
-                    setFormData({ ...formData, ar_middle_name: e.target.value })
-                  }
-                  placeholder="الاسم الأوسط بالعربية"
-                  dir="rtl"
-                />
-              </div>
 
-              <div>
-                <Label htmlFor="ar_last_name">
-                  Last Name (Arabic) | اسم العائلة (عربي)
-                </Label>
-                <Input
-                  id="ar_last_name"
-                  value={formData.ar_last_name}
-                  onChange={(e) =>
-                    setFormData({ ...formData, ar_last_name: e.target.value })
-                  }
-                  placeholder="اسم العائلة بالعربية"
-                  dir="rtl"
-                />
-              </div>
+                                        <div>
+                              <Label htmlFor="ar_last_name">Last Name (Arabic) | اسم العائلة (عربي)</Label>
+                              <Input
+                                id="ar_last_name"
+                                value={formData.ar_last_name}
+                                onChange={(e) => setFormData({ ...formData, ar_last_name: e.target.value })}
+                                dir="rtl"
+                              />
+                            </div>
 
               {/* Contact Information */}
               <div>
@@ -539,17 +653,20 @@ const handleSubmit = async (e: React.FormEvent) => {
                 />
               </div>
 
-              <div>
-                <Label htmlFor="phone">Phone | الهاتف</Label>
-                <Input
-                  id="phone"
-                  value={formData.phone}
-                  onChange={(e) =>
-                    setFormData({ ...formData, phone: e.target.value })
-                  }
-                  placeholder="+1234567890"
-                />
-              </div>
+            <div>
+              <Label htmlFor="phone">Phone | الهاتف</Label>
+              <PhoneInput
+                defaultCountry="om" // Oman as default
+                value={formData.phone}
+                onChange={(phone) => setFormData({...formData, phone})}
+                inputStyle={{
+                  width: '100%',
+                  padding: '0.5rem',
+                  borderRadius: '0.375rem',
+                  border: '1px solid #d1d5db'
+                }}
+              />
+            </div>
 
               {/* Personal Information */}
               <div>
@@ -660,18 +777,26 @@ const handleSubmit = async (e: React.FormEvent) => {
                   placeholder="Postal code"
                 />
               </div>
-
-              <div>
-                <Label htmlFor="country">Country | الدولة</Label>
-                <Input
-                  id="country"
-                  value={formData.country}
-                  onChange={(e) =>
-                    setFormData({ ...formData, country: e.target.value })
-                  }
-                  placeholder="Country"
-                />
-              </div>
+          
+ 
+                      <div>
+            <Label htmlFor="country">Country | الدولة</Label>
+            <Select
+              value={formData.country}
+              onValueChange={(value) => setFormData({ ...formData, country: value })}
+            >
+              <SelectTrigger id="country" className="form-control">
+                <SelectValue placeholder="Select a country" />
+              </SelectTrigger>
+              <SelectContent>
+                {countryList.map((country) => (
+                  <SelectItem key={country.code} value={country.name}>
+                    {country.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
               {/* School Information */}
               <div>
@@ -808,35 +933,36 @@ const handleSubmit = async (e: React.FormEvent) => {
 
             <div className="grid md:grid-cols-2 gap-4">
               {/* Guardian English Name */}
-              <div>
-                <Label htmlFor="name_en">
-                  Name (English) * | الاسم (إنجليزي)
-                </Label>
-                <Input
-                  id="name_en"
-                  value={formData.name_en}
-                  onChange={(e) =>
-                    setFormData({ ...formData, name_en: e.target.value })
-                  }
-                  placeholder="Guardian name in English"
-                  required
-                />
-              </div>
+ <div>
+  <Label htmlFor="name_en">Name (English) * | الاسم (إنجليزي)</Label>
+  <Input
+    id="name_en"
+    value={formData.name_en}
+    onChange={(e) => {
+      const enName = e.target.value;
+      setFormData({ 
+        ...formData, 
+        name_en: enName,
+        name_ar: transliterateToArabic(enName) // Auto-translate
+      });
+    }}
+    placeholder="Guardian name in English"
+    required
+  />
+</div>
 
               {/* Guardian Arabic Name */}
-              <div>
-                <Label htmlFor="name_ar">Name (Arabic) * | الاسم (عربي)</Label>
-                <Input
-                  id="name_ar"
-                  value={formData.name_ar}
-                  onChange={(e) =>
-                    setFormData({ ...formData, name_ar: e.target.value })
-                  }
-                  placeholder="اسم ولي الأمر بالعربية"
-                  dir="rtl"
-                  required
-                />
-              </div>
+<div>
+  <Label htmlFor="name_ar">Name (Arabic) * | الاسم (عربي)</Label>
+  <Input
+    id="name_ar"
+    value={formData.name_ar}
+    onChange={(e) => setFormData({ ...formData, name_ar: e.target.value })}
+    placeholder="اسم ولي الأمر"
+    dir="rtl"
+    required
+  />
+</div>
 
               {/* Contact Information */}
               <div>
