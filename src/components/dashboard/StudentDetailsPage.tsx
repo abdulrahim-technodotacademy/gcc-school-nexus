@@ -265,7 +265,7 @@ const handleSave = async () => {
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">Student Details</h1>
         <div className="flex justify-between items-center gap-2">
-          <Button variant="outline" onClick={isEditing ? handleSave : () => setIsEditing(true)}>
+          {/* <Button variant="outline" onClick={isEditing ? handleSave : () => setIsEditing(true)}>
             {isEditing ? (
               <>
                 <SaveIcon className="w-4 h-4 mr-2" />
@@ -277,7 +277,7 @@ const handleSave = async () => {
                 Edit
               </>
             )}
-          </Button>
+          </Button> */}
 
           <Button variant="outline" onClick={() => window.history.back()}>
             Back to Dashboard
