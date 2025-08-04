@@ -328,14 +328,14 @@ const handleSave = async () => {
             )}
           </Button> */}
 
-           <Button 
+           {/* <Button 
       variant="outline"
       onClick={handleDownloadApplication}
       className="flex items-center gap-1"
     >
       <DownloadIcon className="w-4 h-4 mr-2" />
       Download Application
-    </Button>
+    </Button> */}
 
           <Button variant="outline" onClick={() => window.history.back()}>
             Back to Dashboard

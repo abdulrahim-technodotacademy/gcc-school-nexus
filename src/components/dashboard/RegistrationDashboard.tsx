@@ -274,7 +274,7 @@ const verifyStudent = async (studentId: string) => {
     const response = await fetch(
       `${import.meta.env.VITE_API_BASE_URL}/students/student/${studentId}/`,
       {
-        method: "PATCH", // or "PUT" if your backend expects full replacement
+        method: "PATCH",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,

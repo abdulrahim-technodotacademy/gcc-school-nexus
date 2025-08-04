@@ -99,10 +99,12 @@ function NewRegistrationForPublic() {
 
     // Documents
    student_documents: [] as Array<{
-    document_type: string;
-    file: File;  // Store File object directly
-    description: string;
-  }>,
+      document_type: string;
+      file: File;
+      description: string;
+    }>
+
+
   });
 
   const [currentDocument, setCurrentDocument] = useState({
@@ -252,11 +254,19 @@ const handleSubmit = async (e: React.FormEvent) => {
       is_verified_registration_officer: false
     };
 
+        if (currentDocument.type && currentDocument.file) {
+      formData.student_documents.push({
+        document_type: currentDocument.type,
+        file: currentDocument.file,
+        description: currentDocument.file.name,
+        file_field: `document_file_${formData.student_documents.length}`,
+      });
+    }
+
     // 2. Build student_documents metadata
-     const documentMetadata = formData.student_documents.map((doc, i) => ({
+    const documentMetadata = formData.student_documents.map((doc, i) => ({
       document_type: doc.document_type,
-      description: doc.description || `doc_${i}`,
-      // This will match the FormData field name
+      description: doc.description || (typeof doc.file !== "string" ? (doc.file as File).name : `doc_${i}`),
       file_field: `document_file_${i}`
     }));
 
@@ -300,32 +310,30 @@ formData.student_documents.forEach((doc, index) => {
   }
 };
 
-const handleFileUpload = () => {
-  if (!currentDocument.type || !currentDocument.file) {
-    toast.error("Please select document type and upload a file");
-    return;
-  }
+  const handleFileUpload = () => {
+    if (!currentDocument.type || !currentDocument.file) {
+      toast.error("Please select document type and upload a file");
+      return;
+    }
 
-  // Add the file directly without converting to base64
-  setFormData({
-    ...formData,
-    student_documents: [
-      ...formData.student_documents,
-      {
-        document_type: currentDocument.type,
-        file: currentDocument.file,
-        description: currentDocument.file.name,
-      },
-    ],
-  });
+    const newDocument = {
+      document_type: currentDocument.type,
+      file: currentDocument.file,  // Raw File object
+      description: currentDocument.file.name || "",
+    };
 
-  setCurrentDocument({
-    type: "",
-    file: null,
-  });
+    setFormData((prev) => ({
+      ...prev,
+      student_documents: [...prev.student_documents, newDocument],
+    }));
 
-  toast.success("Document added successfully");
-};
+    setCurrentDocument({
+      type: "",
+      file: null,
+    });
+
+    toast.success("Document uploaded successfully");
+  };
 
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -488,9 +496,9 @@ const transliterateToArabic = (input: string) => {
                 src="/assets/logobr.png" // Replace with your logo path
                 alt="School Logo"
               />
-              <span className="ml-2 text-xl font-semibold text-gray-900">
-                AL-MAWHIBA PRIVATE SCHOOL
-              </span>
+             <span className="ml-2 text-base font-semibold text-gray-900 md:text-lg lg:text-xl">
+  AL-MAWHIBA PRIVATE SCHOOL
+</span>
             </div>
           </div>
           <nav className="flex space-x-8">
@@ -995,15 +1003,17 @@ const transliterateToArabic = (input: string) => {
               {/* Contact Information */}
               <div>
                 <Label htmlFor="phone">Phone * | الهاتف</Label>
-                <Input
-                  id="phone"
-                  value={formData.phone}
-                  onChange={(e) =>
-                    setFormData({ ...formData, phone: e.target.value })
-                  }
-                  placeholder="+1234567890"
-                  required
-                />
+                   <PhoneInput
+                defaultCountry="om" // Oman as default
+                value={formData.phone}
+                onChange={(phone) => setFormData({...formData, phone})}
+                inputStyle={{
+                  width: '100%',
+                  padding: '0.5rem',
+                  borderRadius: '0.375rem',
+                  border: '1px solid #d1d5db'
+                }}
+              />
               </div>
 
               <div>
@@ -1021,38 +1031,50 @@ const transliterateToArabic = (input: string) => {
 
               <div>
                 <Label htmlFor="mobile">Mobile | الجوال</Label>
-                <Input
-                  id="mobile"
-                  value={formData.mobile}
-                  onChange={(e) =>
-                    setFormData({ ...formData, mobile: e.target.value })
-                  }
-                  placeholder="+1122334455"
-                />
+                 <PhoneInput
+                defaultCountry="om" 
+                id="mobile" 
+                value={formData.mobile}
+                onChange={(mobile) => setFormData({...formData, mobile})}
+                inputStyle={{
+                  width: '100%',
+                  padding: '0.5rem',
+                  borderRadius: '0.375rem',
+                  border: '1px solid #d1d5db'
+                }}
+              />
               </div>
 
               <div>
                 <Label htmlFor="work_phone">Work Phone | هاتف العمل</Label>
-                <Input
-                  id="work_phone"
-                  value={formData.work_phone}
-                  onChange={(e) =>
-                    setFormData({ ...formData, work_phone: e.target.value })
-                  }
-                  placeholder="+9876543210"
-                />
+                 <PhoneInput
+                defaultCountry="om" 
+                 id="work_phone"
+                value={formData.work_phone}
+                onChange={(work_phone) => setFormData({...formData, work_phone})}
+                inputStyle={{
+                  width: '100%',
+                  padding: '0.5rem',
+                  borderRadius: '0.375rem',
+                  border: '1px solid #d1d5db'
+                }}
+              />
               </div>
 
               <div>
                 <Label htmlFor="home_phone">Home Phone | الهاتف المنزلي</Label>
-                <Input
-                  id="home_phone"
-                  value={formData.home_phone}
-                  onChange={(e) =>
-                    setFormData({ ...formData, home_phone: e.target.value })
-                  }
-                  placeholder="+192837465"
-                />
+                 <PhoneInput
+                defaultCountry="om" 
+                 id="home_phone"
+                 value={formData.home_phone}
+                onChange={(home_phone) => setFormData({...formData, home_phone})}
+                inputStyle={{
+                  width: '100%',
+                  padding: '0.5rem',
+                  borderRadius: '0.375rem',
+                  border: '1px solid #d1d5db'
+                }}
+              />
               </div>
 
               {/* Relationship */}
