@@ -308,6 +308,46 @@ const handleSubmit = async (e: React.FormEvent) => {
 
     toast.success("Registration submitted successfully!");
     // Reset form if needed
+   setFormData({
+  admission_number: "ADM1234563",
+  en_first_name: "",
+  en_middle_name: "",
+  en_last_name: "",
+  ar_first_name: "",
+  ar_middle_name: "",
+  ar_last_name: "",
+  photo: null,
+  email: "",
+  phone: "",
+  date_of_birth: "",
+  gender: "",
+  religion: "",
+  nationality: "",
+  address: "",
+  city: "",
+  state: "",
+  postal_code: "",
+  country: "",
+  admission_class: "",
+  section: "",
+  admission_date: "",
+  previous_school: "",
+  has_special_needs: false,
+  special_needs_details: "",
+
+  name_en: "",
+  name_ar: "",
+  relationship: "",
+  national_id: "",
+  passport_number: "",
+  work_phone: "",
+  home_phone: "",
+  mobile: "",
+  occupation: "",
+
+  student_documents: [],
+});
+
   } catch (error) {
     console.error("Registration error:", error);
     toast.error(error instanceof Error ? error.message : "Failed to submit registration");
