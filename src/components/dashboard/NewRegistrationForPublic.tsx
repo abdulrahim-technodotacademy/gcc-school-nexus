@@ -13,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { UserPlus, Upload, Save, Trash2 } from "lucide-react";
+import { UserPlus, Upload, Save, Trash2, Home } from "lucide-react";
 import { toast } from "sonner";
 
 const DOCUMENT_TYPES = [
@@ -98,11 +98,11 @@ function NewRegistrationForPublic() {
     occupation: "",
 
     // Documents
-    student_documents: [] as Array<{
-      document_type: string;
-      file: string;
-      description: string;
-    }>,
+   student_documents: [] as Array<{
+    document_type: string;
+    file: File;  // Store File object directly
+    description: string;
+  }>,
   });
 
   const [currentDocument, setCurrentDocument] = useState({
@@ -253,9 +253,10 @@ const handleSubmit = async (e: React.FormEvent) => {
     };
 
     // 2. Build student_documents metadata
-    const documentMetadata = formData.student_documents.map((doc, i) => ({
+     const documentMetadata = formData.student_documents.map((doc, i) => ({
       document_type: doc.document_type,
-      description: doc.description || (typeof doc.file !== "string" ? (doc.file as File).name : `doc_${i}`),
+      description: doc.description || `doc_${i}`,
+      // This will match the FormData field name
       file_field: `document_file_${i}`
     }));
 
@@ -272,12 +273,10 @@ const handleSubmit = async (e: React.FormEvent) => {
     }
 
     // 5. Attach document files
-    formData.student_documents.forEach((doc, i) => {
-      if (typeof doc.file !== "string") {
-        form.append(`document_file_${i}`, doc.file); // Must match file_field above
-      }
-    });
-
+formData.student_documents.forEach((doc, index) => {
+  form.append(`student_documents[${index}].file`, doc.file);
+  form.append(`student_documents[${index}].document_type`, doc.document_type);
+});
     // 6. Submit request
     const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/students/create-student-details/`, {
       method: "POST",
@@ -301,34 +300,32 @@ const handleSubmit = async (e: React.FormEvent) => {
   }
 };
 
-  const handleFileUpload = () => {
-    if (!currentDocument.type || !currentDocument.file) {
-      toast.error("Please select document type and upload a file");
-      return;
-    }
+const handleFileUpload = () => {
+  if (!currentDocument.type || !currentDocument.file) {
+    toast.error("Please select document type and upload a file");
+    return;
+  }
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      const newDocument = {
+  // Add the file directly without converting to base64
+  setFormData({
+    ...formData,
+    student_documents: [
+      ...formData.student_documents,
+      {
         document_type: currentDocument.type,
-        file: reader.result as string,
-        description: currentDocument.file?.name || "",
-      };
+        file: currentDocument.file,
+        description: currentDocument.file.name,
+      },
+    ],
+  });
 
-      setFormData({
-        ...formData,
-        student_documents: [...formData.student_documents, newDocument],
-      });
+  setCurrentDocument({
+    type: "",
+    file: null,
+  });
 
-      setCurrentDocument({
-        type: "",
-        file: null,
-      });
-
-      toast.success("Document uploaded successfully");
-    };
-    reader.readAsDataURL(currentDocument.file);
-  };
+  toast.success("Document added successfully");
+};
 
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -480,7 +477,38 @@ const transliterateToArabic = (input: string) => {
 };
 
   return (
+    <>
+       <header className="bg-white shadow-sm">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center h-16">
+          <div className="flex items-center">
+            <div className="flex-shrink-0 flex items-center">
+              <img
+                className="h-8 w-auto"
+                src="/assets/logobr.png" // Replace with your logo path
+                alt="School Logo"
+              />
+              <span className="ml-2 text-xl font-semibold text-gray-900">
+                AL-MAWHIBA PRIVATE SCHOOL
+              </span>
+            </div>
+          </div>
+          <nav className="flex space-x-8">
+            <a
+              href="/"
+              className="text-gray-900 inline-flex items-center px-1 pt-1 text-sm font-medium"
+            >
+              <Home className="h-5 w-5 mr-1" />
+              Home
+            </a>
+
+          </nav>
+        </div>
+      </div>
+    </header>
+   
     <Card className="max-w-4xl mx-auto mt-20 p-6 bg-white shadow-lg">
+       
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <UserPlus className="h-5 w-5" />
@@ -1231,6 +1259,7 @@ const transliterateToArabic = (input: string) => {
         </form>
       </CardContent>
     </Card>
+     </>
   );
 };
 export default NewRegistrationForPublic
