@@ -5,9 +5,9 @@ import React from 'react'
 function PublicRegistration() {
   return (
     <>
-     <DashboardLayout>
+     {/* <DashboardLayout> */}
     <NewRegistrationForPublic/>
-    </DashboardLayout>
+    {/* </DashboardLayout> */}
     </>
   )
 }
