@@ -289,7 +289,7 @@ const verifyStudent = async (studentId: string) => {
       throw new Error("Failed to verify student");
     }
 
-    // Optional: update UI immediately
+   
     setStudents((prev) =>
       prev.map((student) =>
         student.id === studentId

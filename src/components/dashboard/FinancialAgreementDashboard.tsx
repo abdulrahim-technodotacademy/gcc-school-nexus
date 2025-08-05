@@ -233,33 +233,35 @@ const [employerSignaturePad, setEmployerSignaturePad] = useState(null);
 
         // Transform the data with updated status logic
         const formattedStudents: Student[] = studentsArray.map((student: any) => {
-          let status: 'not-created' | 'pending' | 'signed';
-          let statusAr: string;
-          
-          if (!student.financial_agreement) {
-            status = 'not-created';
-            statusAr = 'لم يتم الإنشاء';
-          } else if (!student.financial_agreement.is_verified_agreement_pdf) {
-            status = 'pending';
-            statusAr = 'بانتظار التحقق';
-          } else {
-            status = 'signed';
-            statusAr = 'تم التوقيع';
-          }
+            let status: 'not-created' | 'pending' | 'signed';
+            let statusAr: string;
+            
+            // Handle cases where financial_agreement is null, undefined, or empty array
+            if (!student.financial_agreement || 
+                (Array.isArray(student.financial_agreement) && student.financial_agreement.length === 0)) {
+                status = 'not-created';
+                statusAr = 'لم يتم الإنشاء';
+            } else if (!student.financial_agreement.is_verified_agreement_pdf) {
+                status = 'pending';
+                statusAr = 'بانتظار التحقق';
+            } else {
+                status = 'signed';
+                statusAr = 'تم التوقيع';
+            }
 
-          return {
-            id: student.id?.toString() || "unknown-id",
-            name: `${student.en_first_name || ''} ${student.en_last_name || ''}`.trim(),
-            nameAr: `${student.ar_first_name || ''} ${student.ar_last_name || ''}`.trim(),
-            grade: student.admission_class?.department_name || "N/A",
-            type: student.section?.name || "N/A",
-            registrationDate: student.admission_date,
-            financial_agreement: student.financial_agreement,
-            status,
-            statusAr,
-            guardianEmail: student.email || "",
-            rawData: student
-          };
+            return {
+                id: student.id?.toString() || "unknown-id",
+                name: `${student.en_first_name || ''} ${student.en_last_name || ''}`.trim(),
+                nameAr: `${student.ar_first_name || ''} ${student.ar_last_name || ''}`.trim(),
+                grade: student.admission_class?.department_name || "N/A",
+                type: student.section?.name || "N/A",
+                registrationDate: student.admission_date,
+                financial_agreement: student.financial_agreement,
+                status,
+                statusAr,
+                guardianEmail: student.email || "",
+                rawData: student
+            };
         });
         
         setPendingStudents(formattedStudents);
@@ -1001,7 +1003,7 @@ const convertToWords = (num: number): string => {
         !currentSigningAgreement?.rawData?.financial_agreement?.id) {
       return;
     }
-
+     
     // Check if both signatures are empty
     if (guardianSignaturePad.isEmpty() || employerSignaturePad.isEmpty()) {
       alert('Please provide both guardian and employer signatures');
@@ -1085,7 +1087,7 @@ const convertToWords = (num: number): string => {
        const formData = new FormData();
        formData.append('agreement_pdf', blob, `signed_agreement_${pdfname.replace(/\//g, '-')}.pdf`);
         formData.append('is_verified_agreement_pdf', 'true'); // Set to false here
-
+        
         const response = await fetch(
           `${import.meta.env.VITE_API_BASE_URL}/students/financial-agreement/${agreementId}/`,
           {
@@ -1103,7 +1105,7 @@ const convertToWords = (num: number): string => {
             ...student,
             financial_agreement: { 
               ...student.financial_agreement, 
-              is_verified_agreement_pdf: true // Also set to false in UI state
+              is_verified_agreement_pdf: true 
             },
             status: 'signed',
             statusAr: 'تم التوقيع'
