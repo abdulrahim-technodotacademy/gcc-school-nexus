@@ -519,7 +519,7 @@ const handleSave = async () => {
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">Student Details</h1>
         <div className="flex gap-2">
-          <Button
+          {/* <Button
             variant="outline"
             onClick={isEditing ? handleSave : () => setIsEditing(true)}
           >
@@ -534,7 +534,7 @@ const handleSave = async () => {
                 Edit
               </>
             )}
-          </Button>
+          </Button> */}
           <Button
             variant="outline"
             onClick={handleDownloadApplication}
