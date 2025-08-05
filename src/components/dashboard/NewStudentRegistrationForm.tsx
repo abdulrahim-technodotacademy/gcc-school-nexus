@@ -59,7 +59,7 @@ const NewStudentRegistrationForm = () => {
 
   const [formData, setFormData] = useState({
     // Student Information
-    admission_number: "ADM1234563",
+    admission_number: "",
     en_first_name: "",
     en_middle_name: "",
     en_last_name: "",
@@ -533,7 +533,7 @@ const transliterateToArabic = (input: string) => {
     <>
      {(isLoading.departments || isLoading.sections || isSubmitting) && <FullPageLoader />}
 
-     <Card className="max-w-6xl mx-auto mt-20 p-6 bg-white shadow-lg">
+     <Card className="max-w-6xl mx-auto mt-20 p-10 bg-white shadow-lg">
            
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -542,14 +542,14 @@ const transliterateToArabic = (input: string) => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-14">
               {/* Student Information Section */}
               <div>
                 <h3 className="text-lg font-semibold mb-4 border-b pb-2">
                   Student Information | معلومات الطالب
                 </h3>
     
-                <div className="grid md:grid-cols-2 gap-4">
+                <div className="grid md:grid-cols-2 gap-6">
                   {/* Admission Number */}
                   <div>
                     <Label htmlFor="admission_number">
@@ -985,7 +985,7 @@ const transliterateToArabic = (input: string) => {
                   Guardian Information | معلومات ولي الأمر
                 </h3>
     
-                <div className="grid md:grid-cols-2 gap-4">
+                <div className="grid md:grid-cols-2 gap-6">
                   {/* Guardian English Name */}
      <div>
       <Label htmlFor="name_en">Name (English) * | الاسم (إنجليزي)</Label>

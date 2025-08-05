@@ -134,6 +134,8 @@ const loadStudents = async () => {
     }
 
       const result = await response.json();
+
+      
       console.log(result.data);
       
       const studentsData: Student[] = result.data.map((student: any, index: number) => ({
@@ -165,15 +167,16 @@ const loadStudents = async () => {
     setStudents(studentsData); // React will update state asynchronously
     // console.log("Students loaded:", studentsData); // Use this
 
-      const uniqueClasses = Array.from(
-    new Set(students.map((student) => student.currentClass))
-  ).sort((a, b) => {
-    return isNaN(Number(a)) || isNaN(Number(b))
-      ? a.localeCompare(b)
-      : Number(a) - Number(b);
-  });
+   const uniqueClasses = Array.from(
+      new Set(studentsData.map((student) => student.currentClass))
+    ).sort((a, b) => {
+      return isNaN(Number(a)) || isNaN(Number(b))
+        ? a.localeCompare(b)
+        : Number(a) - Number(b);
+    });
 
-  setClassList(uniqueClasses);
+    setClassList(uniqueClasses);
+    setStudents(studentsData);
 
   } catch (error) {
     console.error("Error loading students:", error);
@@ -249,14 +252,11 @@ const loadStudents = async () => {
     }
   }, [activeTab]);
 
-  const handleClassChange = (classValue: string) => {
-    setSelectedClass(classValue);
-    const filteredStudents = students.filter(
-      (student) => student.currentClass === classValue
-    );
-    setStudents(filteredStudents);
-    setSelectedStudents({});
-  };
+const handleClassChange = (classValue: string) => {
+  setSelectedClass(classValue);
+  // Don't filter students here - we'll use filteredStudents for display
+  setSelectedStudents({});
+}
 
   const handleDepartmentChange = (e) => {
   const deptId = e.target.value;
@@ -421,16 +421,22 @@ const promoteStudent = async (studentId: string, newClass: string, newSection: s
 };
 
 
-  const filteredStudents = students.filter((student) => {
-    const matchesSearch =
-      student.name_en.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      student.name_ar.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus =
-      verificationStatus === "all" || student.status === verificationStatus;
-    const matchesClass =
-      !selectedClass || student.currentClass === selectedClass;
-    return matchesSearch && matchesStatus && matchesClass;
-  });
+const filteredStudents = students.filter((student) => {
+  const nameEn = student.name_en || '';
+  const nameAr = student.name_ar || '';
+  
+  const matchesSearch =
+    nameEn.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    nameAr.toLowerCase().includes(searchTerm.toLowerCase());
+  
+  const matchesStatus =
+    verificationStatus === "all" || student.status === verificationStatus;
+  
+  const matchesClass =
+    !selectedClass || student.currentClass === selectedClass;
+  
+  return matchesSearch && matchesStatus && matchesClass;
+});
 
   return (
     <div className="p-6 space-y-6">

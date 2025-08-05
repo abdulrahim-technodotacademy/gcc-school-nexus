@@ -129,6 +129,7 @@ interface Agreement {
 
 interface FinancialAgreementRequest {
   student: string;
+  admission_class: string;
   contract_number: string;
   contract_type: string;
   registration_fees: string;
@@ -418,7 +419,7 @@ if (feeStructure.paymentPlan !== 'one') {
     if (!accessToken) throw new Error("Authentication required");
 
     const response = await fetch(
-      `${import.meta.env.VITE_API_BASE_URL}/students/financial-agreement/`,
+      `${import.meta.env.VITE_API_BASE_URL}/students/financial-agreement-create/`,
       {
         method: "POST",
         headers: {
@@ -589,40 +590,40 @@ const convertToWords = (num: number): string => {
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
                   {filteredStudents.map((student) => (
-  <tr key={student.id}>
-    <td className="px-6 py-4 whitespace-nowrap">
-      <div className="font-medium">{student.name}</div>
-      <div className="text-gray-500" dir="rtl">{student.nameAr}</div>
-    </td>
-    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{student.grade}</td>
-    <td className="px-6 py-4 whitespace-nowrap">
-      <div>{student.type}</div>
-      <div className="text-gray-500" dir="rtl">{student.typeAr}</div>
-    </td>
-    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{student.registrationDate}</td>
-    <td className="px-6 py-4 whitespace-nowrap">
-      <div>{student.status}</div>
-      <div className="text-gray-500" dir="rtl">{student.statusAr}</div>
-    </td>
-    <td className="px-6 py-4 whitespace-nowrap">
-      {student.status === 'not-created' && (
-        <Button 
-          onClick={() => handleCreateAgreement(student)}
-          className="bg-green-600 hover:bg-green-700 text-white"
-        >
-          <FileText className="mr-2 h-4 w-4" />
-          Create Agreement
-        </Button>
-      )}
-      {student.status === 'pending' && (
-        <span className="text-yellow-600">Pending Verification</span>
-      )}
-      {student.status === 'signed' && (
-        <span className="text-green-600">Agreement Signed</span>
-      )}
-    </td>
-  </tr>
-))}
+                    <tr key={student.id}>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="font-medium">{student.name}</div>
+                        <div className="text-gray-500" dir="rtl">{student.nameAr}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{student.grade}</td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div>{student.type}</div>
+                        <div className="text-gray-500" dir="rtl">{student.typeAr}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{student.registrationDate}</td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div>{student.status}</div>
+                        <div className="text-gray-500" dir="rtl">{student.statusAr}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {student.status === 'not-created' && (
+                          <Button 
+                            onClick={() => handleCreateAgreement(student)}
+                            className="bg-green-600 hover:bg-green-700 text-white"
+                          >
+                            <FileText className="mr-2 h-4 w-4" />
+                            Create Agreement
+                          </Button>
+                        )}
+                        {student.status === 'pending' && (
+                          <span className="text-yellow-600">Pending Verification</span>
+                        )}
+                        {student.status === 'signed' && (
+                          <span className="text-green-600">Agreement Signed</span>
+                        )}
+                      </td>
+                    </tr>
+                        ))}
                   </tbody>
                 </table>
               </div>
