@@ -232,37 +232,50 @@ const [employerSignaturePad, setEmployerSignaturePad] = useState(null);
         }
 
         // Transform the data with updated status logic
-        const formattedStudents: Student[] = studentsArray.map((student: any) => {
-            let status: 'not-created' | 'pending' | 'signed';
-            let statusAr: string;
-            
-            // Handle cases where financial_agreement is null, undefined, or empty array
-            if (!student.financial_agreement || 
-                (Array.isArray(student.financial_agreement) && student.financial_agreement.length === 0)) {
-                status = 'not-created';
-                statusAr = 'لم يتم الإنشاء';
-            } else if (!student.financial_agreement.is_verified_agreement_pdf) {
-                status = 'pending';
-                statusAr = 'بانتظار التحقق';
-            } else {
-                status = 'signed';
-                statusAr = 'تم التوقيع';
-            }
+      const formattedStudents: Student[] = studentsArray.map((student: any) => {
+    let status: 'not-created' | 'pending' | 'signed';
+    let statusAr: string;
+    
+    // Handle cases where financial_agreement is null, undefined, or empty array
+    if (!student.financial_agreement || 
+        (Array.isArray(student.financial_agreement) && student.financial_agreement.length === 0)) {
+        status = 'not-created';
+        statusAr = 'لم يتم الإنشاء';
+    } else if (Array.isArray(student.financial_agreement)) {
+        // Handle case where financial_agreement is an array
+        const agreement = student.financial_agreement[0]; // Take the first agreement if array
+        if (!agreement.is_verified_agreement_pdf) {
+            status = 'pending';
+            statusAr = 'بانتظار التحقق';
+        } else {
+            status = 'signed';
+            statusAr = 'تم التوقيع';
+        }
+    } else if (!student.financial_agreement.is_verified_agreement_pdf) {
+        // Handle case where financial_agreement is a single object
+        status = 'pending';
+        statusAr = 'بانتظار التحقق';
+    } else {
+        status = 'signed';
+        statusAr = 'تم التوقيع';
+    }
 
-            return {
-                id: student.id?.toString() || "unknown-id",
-                name: `${student.en_first_name || ''} ${student.en_last_name || ''}`.trim(),
-                nameAr: `${student.ar_first_name || ''} ${student.ar_last_name || ''}`.trim(),
-                grade: student.admission_class?.department_name || "N/A",
-                type: student.section?.name || "N/A",
-                registrationDate: student.admission_date,
-                financial_agreement: student.financial_agreement,
-                status,
-                statusAr,
-                guardianEmail: student.email || "",
-                rawData: student
-            };
-        });
+    return {
+        id: student.id?.toString() || "unknown-id",
+        name: `${student.en_first_name || ''} ${student.en_last_name || ''}`.trim(),
+        nameAr: `${student.ar_first_name || ''} ${student.ar_last_name || ''}`.trim(),
+        grade: student.admission_class?.department_name || "N/A",
+        type: student.section?.name || "N/A",
+        registrationDate: student.admission_date,
+        financial_agreement: Array.isArray(student.financial_agreement) 
+            ? student.financial_agreement[0] || null 
+            : student.financial_agreement,
+        status,
+        statusAr,
+        guardianEmail: student.email || "",
+        rawData: student
+    };
+});
         
         setPendingStudents(formattedStudents);
 
@@ -368,6 +381,7 @@ const contractNumber = `FA-${new Date().getFullYear()}-${Math.floor(Math.random(
   // Prepare the request payload
   const payload: FinancialAgreementRequest = {
     student: selectedStudent.id,
+    admission_class: selectedStudent.admission_class.id,
     contract_number: contractNumber,
     contract_type: "new",
     registration_fees: feeStructure.registrationFee.toFixed(3),
@@ -592,40 +606,40 @@ const convertToWords = (num: number): string => {
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
                   {filteredStudents.map((student) => (
-                    <tr key={student.id}>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="font-medium">{student.name}</div>
-                        <div className="text-gray-500" dir="rtl">{student.nameAr}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{student.grade}</td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div>{student.type}</div>
-                        <div className="text-gray-500" dir="rtl">{student.typeAr}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{student.registrationDate}</td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div>{student.status}</div>
-                        <div className="text-gray-500" dir="rtl">{student.statusAr}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        {student.status === 'not-created' && (
-                          <Button 
-                            onClick={() => handleCreateAgreement(student)}
-                            className="bg-green-600 hover:bg-green-700 text-white"
-                          >
-                            <FileText className="mr-2 h-4 w-4" />
-                            Create Agreement
-                          </Button>
-                        )}
-                        {student.status === 'pending' && (
-                          <span className="text-yellow-600">Pending Verification</span>
-                        )}
-                        {student.status === 'signed' && (
-                          <span className="text-green-600">Agreement Signed</span>
-                        )}
-                      </td>
-                    </tr>
-                        ))}
+  <tr key={student.id}>
+    <td className="px-6 py-4 whitespace-nowrap">
+      <div className="font-medium">{student.name}</div>
+      <div className="text-gray-500" dir="rtl">{student.nameAr}</div>
+    </td>
+    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{student.grade}</td>
+    <td className="px-6 py-4 whitespace-nowrap">
+      <div>{student.type}</div>
+      <div className="text-gray-500" dir="rtl">{student.typeAr}</div>
+    </td>
+    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{student.registrationDate}</td>
+    <td className="px-6 py-4 whitespace-nowrap">
+      <div>{student.status}</div>
+      <div className="text-gray-500" dir="rtl">{student.statusAr}</div>
+    </td>
+    <td className="px-6 py-4 whitespace-nowrap">
+      {student.status === 'not-created' && (
+        <Button 
+          onClick={() => handleCreateAgreement(student)}
+          className="bg-green-600 hover:bg-green-700 text-white"
+        >
+          <FileText className="mr-2 h-4 w-4" />
+          Create Agreement
+        </Button>
+      )}
+      {student.status === 'pending' && (
+        <span className="text-yellow-600">Pending Verification</span>
+      )}
+      {student.status === 'signed' && (
+        <span className="text-green-600">Agreement Signed</span>
+      )}
+    </td>
+  </tr>
+))}
                   </tbody>
                 </table>
               </div>
@@ -1003,7 +1017,7 @@ const convertToWords = (num: number): string => {
         !currentSigningAgreement?.rawData?.financial_agreement?.id) {
       return;
     }
-     
+
     // Check if both signatures are empty
     if (guardianSignaturePad.isEmpty() || employerSignaturePad.isEmpty()) {
       alert('Please provide both guardian and employer signatures');
@@ -1087,7 +1101,7 @@ const convertToWords = (num: number): string => {
        const formData = new FormData();
        formData.append('agreement_pdf', blob, `signed_agreement_${pdfname.replace(/\//g, '-')}.pdf`);
         formData.append('is_verified_agreement_pdf', 'true'); // Set to false here
-        
+
         const response = await fetch(
           `${import.meta.env.VITE_API_BASE_URL}/students/financial-agreement/${agreementId}/`,
           {
@@ -1105,7 +1119,7 @@ const convertToWords = (num: number): string => {
             ...student,
             financial_agreement: { 
               ...student.financial_agreement, 
-              is_verified_agreement_pdf: true 
+              is_verified_agreement_pdf: true // Also set to false in UI state
             },
             status: 'signed',
             statusAr: 'تم التوقيع'
