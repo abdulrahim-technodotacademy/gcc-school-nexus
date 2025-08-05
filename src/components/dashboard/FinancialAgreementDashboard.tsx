@@ -129,8 +129,8 @@ interface Agreement {
 
 interface FinancialAgreementRequest {
   student: string;
-  admission_class: string;
   contract_number: string;
+  admission_class: string;
   contract_type: string;
   registration_fees: string;
   books_fees: string;
@@ -155,7 +155,10 @@ interface FinancialAgreementRequest {
   installment4_date?: string;
   installment4_amount?: string;
 }
-
+type AgreementStatus = 
+  | 'not-created'       // When financial_agreement is empty array []
+  | 'pending-signature' // When agreement exists but is_verified_agreement_pdf is false
+  | 'completed';        // When is_verified_agreement_pdf is true
 const FinancialAgreementDashboard = () => {
   const [activeTab, setActiveTab] = useState<'pending' | 'agreements' | 'esign'>('pending');
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
@@ -284,6 +287,8 @@ const [employerSignaturePad, setEmployerSignaturePad] = useState(null);
       }
     };
 
+    
+
     loadData();
   }, []);
 
@@ -368,6 +373,8 @@ const [employerSignaturePad, setEmployerSignaturePad] = useState(null);
   e.preventDefault();
   setIsSubmitting(true);
   setSubmitError('');
+  console.log("Submitting agreement for student:", selectedStudent);
+  
 
   if (!selectedStudent) {
     setSubmitError('Please select a student');
@@ -381,8 +388,8 @@ const contractNumber = `FA-${new Date().getFullYear()}-${Math.floor(Math.random(
   // Prepare the request payload
   const payload: FinancialAgreementRequest = {
     student: selectedStudent.id,
-    admission_class: selectedStudent.admission_class.id,
     contract_number: contractNumber,
+    admission_class : selectedStudent.rawData.admission_class.id,
     contract_type: "new",
     registration_fees: feeStructure.registrationFee.toFixed(3),
     books_fees: feeStructure.booksFee.toFixed(3),
@@ -1014,7 +1021,7 @@ const convertToWords = (num: number): string => {
   className="bg-green-600 hover:bg-green-700"
   onClick={async () => {
     if (!guardianSignaturePad || !employerSignaturePad || 
-        !currentSigningAgreement?.rawData?.financial_agreement?.id) {
+        !currentSigningAgreement?.rawData?.financial_agreement[0]?.id) {
       return;
     }
 
@@ -1028,7 +1035,10 @@ const convertToWords = (num: number): string => {
       const accessToken = localStorage.getItem("accessToken");
       if (!accessToken) throw new Error('Authentication required');
       
-      const agreementId = currentSigningAgreement.rawData.financial_agreement.id;
+      const agreementId = currentSigningAgreement.rawData.financial_agreement[0].id;
+
+      console.log(`Signing agreement with ID: ${agreementId}`);
+      
 
       // 1. Download original PDF
       const pdfResponse = await fetch(
