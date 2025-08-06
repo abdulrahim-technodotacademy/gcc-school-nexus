@@ -583,95 +583,85 @@ const transliterateToArabic = (input: string) => {
                   </div>
     
                   {/* English Name */}
-                                <div>
-                    <Label htmlFor="en_first_name">
-                      First Name (English) * | الاسم الأول (إنجليزي)
-                    </Label>
-                    <Input
-                      id="en_first_name"
-                      value={formData.en_first_name}
-                      onChange={(e) => {
-                        const enName = e.target.value;
-                        setFormData({ 
-                          ...formData, 
-                          en_first_name: enName,
-                          ar_first_name: transliterateToArabic(enName) // Auto-translate
-                        });
-                      }}
-                      placeholder="e.g. Ahmed"
-                      required
-                    />
-                  </div>
+                              <div>
+  <Label htmlFor="en_first_name">
+    First Name (English) * | الاسم الأول (إنجليزي)
+  </Label>
+  <Input
+    id="en_first_name"
+    value={formData.en_first_name}
+    onChange={(e) => {
+      setFormData({ 
+        ...formData, 
+        en_first_name: e.target.value
+      });
+    }}
+    placeholder="e.g. Ahmed"
+    required
+  />
+</div>
     
-                                                <div>
-                            <Label htmlFor="ar_first_name">
-                              First Name (Arabic) * | الاسم الأول (عربي)
-                            </Label>
-                            <Input
-                              id="ar_first_name"
-                              value={formData.ar_first_name}
-                              onChange={(e) => setFormData({ ...formData, ar_first_name: e.target.value })}
-                              placeholder="سيتم ملؤه تلقائياً"
-                              dir="rtl"
-                              required
-                            />
-                          </div>
+                                          <div>
+  <Label htmlFor="ar_first_name">
+    First Name (Arabic) * | الاسم الأول (عربي)
+  </Label>
+  <Input
+    id="ar_first_name"
+    value={formData.ar_first_name}
+    onChange={(e) => setFormData({ ...formData, ar_first_name: e.target.value })}
+    placeholder="أحمد"
+    dir="rtl"
+    required
+  />
+</div>
     
-    <div>
-                              <Label htmlFor="en_middle_name">
-                                Middle Name (English) | الاسم الأوسط (إنجليزي)
-                              </Label>
-                              <Input
-                                id="en_middle_name"
-                                value={formData.en_middle_name}
-                                onChange={(e) => {
-                                  const enName = e.target.value;
-                                  setFormData({ 
-                                    ...formData, 
-                                    en_middle_name: enName,
-                                    ar_middle_name: transliterateToArabic(enName) // Auto-translate
-                                  });
-                                }}
-                                placeholder="Middle name in English"
-                              />
-                            </div>
+<div>
+  <Label htmlFor="en_middle_name">
+    Middle Name (English) | الاسم الأوسط (إنجليزي)
+  </Label>
+  <Input
+    id="en_middle_name"
+    value={formData.en_middle_name}
+    onChange={(e) => {
+      setFormData({ 
+        ...formData, 
+        en_middle_name: e.target.value
+      });
+    }}
+    placeholder="Middle name in English"
+  />
+</div>
     
                             
-                                            <div>
-                                  <Label htmlFor="en_middle_name">
-                                    Middle Name (English) | الاسم الأوسط (إنجليزي)
-                                  </Label>
-                              <Input
-                                    id="ar_middle_name"
-                                    value={formData.ar_middle_name}
-                                    onChange={(e) => 
-                                      setFormData({ ...formData, ar_middle_name: e.target.value })
-                                    }
-                                    placeholder="سيتم ملؤه تلقائياً"
-                                    dir="rtl"
-                                    className={
-                                      formData.ar_middle_name !== transliterateToArabic(formData.en_middle_name) 
-                                        ? "border-blue-500" 
-                                        : ""
-                                    }
-                                  />
-                                </div>
-                           <div>
-                              <Label htmlFor="en_last_name">Last Name (English) | اسم العائلة (إنجليزي)</Label>
-                              <Input
-                                id="en_last_name"
-                                value={formData.en_last_name}
-                                onChange={(e) => {
-                                  const enName = e.target.value;
-                                  setFormData({ 
-                                    ...formData, 
-                                    en_last_name: enName,
-                                    ar_last_name: transliterateToArabic(enName) // Auto-translate
-                                  });
-                                }}
-                                placeholder="e.g. Khan"
-                              />
-                            </div>
+<div>
+  <Label htmlFor="ar_middle_name">
+    Middle Name (Arabic) | الاسم الأوسط (عربي)
+  </Label>
+  <Input
+    id="ar_middle_name"
+    value={formData.ar_middle_name}
+    onChange={(e) => 
+      setFormData({ ...formData, ar_middle_name: e.target.value })
+    }
+    placeholder="الاسم الأوسط"
+    dir="rtl"
+  />
+</div>
+
+<div>
+  <Label htmlFor="en_last_name">Last Name (English) | اسم العائلة (إنجليزي)</Label>
+  <Input
+    id="en_last_name"
+    value={formData.en_last_name}
+    onChange={(e) => {
+      setFormData({ 
+        ...formData, 
+        en_last_name: e.target.value
+      });
+    }}
+    placeholder="e.g. Khan"
+  />
+</div>
     
                             
     
@@ -680,16 +670,16 @@ const transliterateToArabic = (input: string) => {
                   {/* Arabic Name */}
           
     
-    
-                                            <div>
-                                  <Label htmlFor="ar_last_name">Last Name (Arabic) | اسم العائلة (عربي)</Label>
-                                  <Input
-                                    id="ar_last_name"
-                                    value={formData.ar_last_name}
-                                    onChange={(e) => setFormData({ ...formData, ar_last_name: e.target.value })}
-                                    dir="rtl"
-                                  />
-                                </div>
+<div>
+  <Label htmlFor="ar_last_name">Last Name (Arabic) | اسم العائلة (عربي)</Label>
+  <Input
+    id="ar_last_name"
+    value={formData.ar_last_name}
+    onChange={(e) => setFormData({ ...formData, ar_last_name: e.target.value })}
+    placeholder="خان"
+    dir="rtl"
+  />
+</div>
     
                   {/* Contact Information */}
                   <div>
@@ -985,36 +975,34 @@ const transliterateToArabic = (input: string) => {
     
                 <div className="grid md:grid-cols-2 gap-6">
                   {/* Guardian English Name */}
-     <div>
-      <Label htmlFor="name_en">Name (English) * | الاسم (إنجليزي)</Label>
-      <Input
-        id="name_en"
-        value={formData.name_en}
-        onChange={(e) => {
-          const enName = e.target.value;
-          setFormData({ 
-            ...formData, 
-            name_en: enName,
-            name_ar: transliterateToArabic(enName) // Auto-translate
-          });
-        }}
-        placeholder="Guardian name in English"
-        required
-      />
-    </div>
+  <div>
+  <Label htmlFor="name_en">Name (English) * | الاسم (إنجليزي)</Label>
+  <Input
+    id="name_en"
+    value={formData.name_en}
+    onChange={(e) => {
+      setFormData({ 
+        ...formData, 
+        name_en: e.target.value
+      });
+    }}
+    placeholder="Guardian name in English"
+    required
+  />
+</div>
     
                   {/* Guardian Arabic Name */}
-    <div>
-      <Label htmlFor="name_ar">Name (Arabic) * | الاسم (عربي)</Label>
-      <Input
-        id="name_ar"
-        value={formData.name_ar}
-        onChange={(e) => setFormData({ ...formData, name_ar: e.target.value })}
-        placeholder="اسم ولي الأمر"
-        dir="rtl"
-        required
-      />
-    </div>
+<div>
+  <Label htmlFor="name_ar">Name (Arabic) * | الاسم (عربي)</Label>
+  <Input
+    id="name_ar"
+    value={formData.name_ar}
+    onChange={(e) => setFormData({ ...formData, name_ar: e.target.value })}
+    placeholder="اسم ولي الأمر"
+    dir="rtl"
+    required
+  />
+</div>
     
                   {/* Contact Information */}
                   <div>
