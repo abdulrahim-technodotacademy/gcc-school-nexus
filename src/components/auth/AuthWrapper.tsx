@@ -1,50 +1,28 @@
-// AuthWrapper.tsx
-import { ReactNode, useEffect } from 'react';
+// src/components/auth/AuthWrapper.tsx
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { jwtDecode } from 'jwt-decode';
-import { toast } from '@/components/ui/use-toast'; // or use sonner if you prefer
+import { TokenService } from '../../services/tokenService';
+import { Loader2 } from 'lucide-react';
 
-interface AuthWrapperProps {
-  children: ReactNode;
-}
 
-const AuthWrapper = ({ children }: AuthWrapperProps) => {
+export const AuthWrapper = ({ children }: { children: React.ReactNode }) => {
+  const [isChecking, setIsChecking] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const checkAuth = () => {
-      const accessToken = localStorage.getItem('accessToken');
-      
-      if (!accessToken) {
-        toast({
-          title: "Authentication Required",
-          description: "Please login to access this page",
-          variant: "destructive",
-        });
-        navigate('/admin/login');
+    const checkAuth = async () => {
+      if (TokenService.isAccessTokenValid()) {
+        TokenService.scheduleTokenRefresh();
+        setIsChecking(false);
         return;
       }
 
-      try {
-        const decodedToken = jwtDecode(accessToken);
-        const currentTime = Date.now() / 1000;
-        
-        if (decodedToken.exp < currentTime) {
-          localStorage.removeItem('accessToken');
-          toast({
-            title: "Session Expired",
-            description: "Your session has expired. Please login again.",
-            variant: "destructive",
-          });
-          navigate('/admin/login');
-        }
-      } catch (error) {
-        localStorage.removeItem('accessToken');
-        toast({
-          title: "Invalid Session",
-          description: "Your session is invalid. Please login again.",
-          variant: "destructive",
-        });
+      // Try to refresh token if access token is expired
+      const refreshSuccess = await TokenService.refreshToken();
+      if (refreshSuccess) {
+        setIsChecking(false);
+      } else {
+        TokenService.clearTokens();
         navigate('/admin/login');
       }
     };
@@ -52,7 +30,15 @@ const AuthWrapper = ({ children }: AuthWrapperProps) => {
     checkAuth();
   }, [navigate]);
 
+  if (isChecking) {
+    return (
+      // <div className="flex items-center justify-center h-screen">
+      //   <Loader2 className="h-12 w-12" />
+      // </div>
+      <>
+      </>
+    );
+  }
+
   return <>{children}</>;
 };
-
-export default AuthWrapper;

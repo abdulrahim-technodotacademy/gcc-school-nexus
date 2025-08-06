@@ -133,7 +133,7 @@ const NewStudentRegistrationForm = () => {
   const fetchDepartments = async () => {
     setIsLoading((prev) => ({ ...prev, departments: true }));
     try {
-      const accessToken = localStorage.getItem("accessToken");
+    
       const response = await fetch(
         `${import.meta.env.VITE_API_BASE_URL}/students/department/`,
       );
@@ -151,7 +151,7 @@ const NewStudentRegistrationForm = () => {
   const fetchSections = async () => {
     setIsLoading((prev) => ({ ...prev, sections: true }));
     try {
-      const accessToken = localStorage.getItem("accessToken");
+
       const response = await fetch(
         `${import.meta.env.VITE_API_BASE_URL}/students/section/`,
        
@@ -204,8 +204,6 @@ const handleSubmit = async (e: React.FormEvent) => {
   }
 
   try {
-    const accessToken = localStorage.getItem("accessToken");
-    if (!accessToken) throw new Error("Authentication token not found");
 
     // 1. Build JSON objects
     const guardian = {

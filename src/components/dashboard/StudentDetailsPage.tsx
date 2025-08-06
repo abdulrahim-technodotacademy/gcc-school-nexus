@@ -104,7 +104,7 @@ type Student = {
   };
   
   // Documents
-  student_documents: Array<{
+  student_documents?: Array<{  // Make optional since you're not updating
     id: string;
     document_type: string;
     file_url: string;
@@ -124,6 +124,11 @@ type Section = {
   id: string;
   name: string;
   department: string;
+};
+
+type APIStudentResponse = {
+  student: Student;
+  guardian?: Guardian;
 };
 
 export default function StudentDetailsPage() {
@@ -333,97 +338,105 @@ const handleSave = async () => {
   
   try {
     const token = localStorage.getItem("accessToken");
-    const form = new FormData();
-
-    // 1. Prepare guardian data - EXCLUDE ID if not needed for update
-    const guardian = {
-      name_en: student.guardian.name_en,
-      name_ar: student.guardian.name_ar,
-      phone: student.guardian.phone,
-      email: student.guardian.email,
-      address: student.guardian.address,
-      relationship: student.guardian.relationship,
-      national_id: student.guardian.national_id,
-      passport_number: student.guardian.passport_number,
-      work_phone: student.guardian.work_phone,
-      home_phone: student.guardian.home_phone,
-      mobile: student.guardian.mobile,
-      occupation: student.guardian.occupation,
-      id: student.guardian.id,
-      // Omit id field unless specifically required by your backend
+    
+    // Prepare the complete request body
+    const requestBody = {
+      student: {
+        // Personal Information (English)
+        en_first_name: student.en_first_name,
+        en_middle_name: student.en_middle_name,
+        en_last_name: student.en_last_name,
+        
+        // Personal Information (Arabic)
+        ar_first_name: student.ar_first_name,
+        ar_middle_name: student.ar_middle_name,
+        ar_last_name: student.ar_last_name,
+        
+        // Contact Information
+        email: student.email,
+        phone: student.phone,
+        
+        // Personal Details
+        date_of_birth: student.date_of_birth,
+        gender: student.gender === "Male" ? "M" : "F",
+        religion: student.religion,
+        nationality: student.nationality,
+        
+        // Address Information
+        address: student.address,
+        city: student.city,
+        state: student.state,
+        postal_code: student.postal_code,
+        country: student.country,
+        
+        // Academic Information
+        admission_class: student.admission_class.id,
+        section: student.section.id,
+        admission_date: student.admission_date,
+        previous_school: student.previous_school,
+        
+        // Special Needs
+        has_special_needs: student.has_special_needs,
+        special_needs_details: student.special_needs_details,
+      },
+      guardian: {
+        id: student.guardian.id, // Required UUID
+        name_en: student.guardian.name_en,
+        name_ar: student.guardian.name_ar,
+        phone: student.guardian.phone,
+        email: student.guardian.email,
+        address: student.guardian.address,
+        relationship: student.guardian.relationship,
+        national_id: student.guardian.national_id,
+        passport_number: student.guardian.passport_number,
+        work_phone: student.guardian.work_phone,
+        home_phone: student.guardian.home_phone,
+        mobile: student.guardian.mobile,
+        occupation: student.guardian.occupation,
+        
+        // These fields are in your example but set to null
+        auto_id: null,
+        custom_order: null,
+        alt_txt: null
+      }
     };
 
-    // 2. Prepare student data - EXCLUDE ID if not needed for update
-    const studentData = {
-      admission_number: student.admission_number,
-      en_first_name: student.en_first_name,
-      en_middle_name: student.en_middle_name,
-      en_last_name: student.en_last_name,
-      ar_first_name: student.ar_first_name,
-      ar_middle_name: student.ar_middle_name,
-      ar_last_name: student.ar_last_name,
-      email: student.email,
-      phone: student.phone,
-      date_of_birth: student.date_of_birth,
-      gender: student.gender === "Male" ? "M" : "F",
-      religion: student.religion,
-      nationality: student.nationality,
-      address: student.address,
-      city: student.city,
-      state: student.state,
-      postal_code: student.postal_code,
-      country: student.country,
-      admission_class: student.admission_class.id,
-      section: student.section.id,
-      admission_date: student.admission_date,
-      previous_school: student.previous_school,
-      has_special_needs: student.has_special_needs,
-      special_needs_details: student.special_needs_details
-      // Omit is_promoted, is_active, etc. if not meant to be updated
-    };
+    console.log("Sending payload:", JSON.stringify(requestBody, null, 2));
 
-    // 3. Prepare document metadata - include IDs for existing docs only
-    const documentMetadata = student.student_documents.map(doc => ({
-      id: doc.id || undefined, // Only include ID for existing docs
-      document_type: doc.document_type,
-      description: doc.description
-      // Omit file_field if not uploading new files
-    }));
-
-    // 4. Append data to form
-    form.append("guardian", JSON.stringify(guardian));
-    form.append("student", JSON.stringify(studentData));
-    form.append("student_documents", JSON.stringify(documentMetadata));
-
-    // 5. Debug output
-    console.log("Submitting:", {
-      guardian,
-      student: studentData,
-      documents: documentMetadata
-    });
-
-    // 6. Send request
     const res = await fetch(
-      `${import.meta.env.VITE_API_BASE_URL}/students/student/${student.id}/`,
+      `${import.meta.env.VITE_API_BASE_URL}/students/student-with-guardian/edit/${student.id}/`,
       {
         method: "PATCH",
         headers: {
           Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
         },
-        body: form
+        body: JSON.stringify(requestBody)
       }
     );
 
     if (!res.ok) {
       const errorData = await res.json();
-      console.error("Backend error:", errorData);
-      throw new Error(errorData.message || "Failed to save student data");
+      console.error("API Error Response:", errorData);
+      throw new Error(errorData.errors || errorData.message || "Failed to save data");
     }
 
     const result = await res.json();
-    setStudent(result.data);
     setIsEditing(false);
     toast.success("Student updated successfully");
+    
+    // Update local state with the response
+    setStudent(prev => ({
+      ...prev,
+      ...result.data.student,
+      admission_class: result.data.student?.admission_class || prev.admission_class,
+      section: result.data.student?.section || prev.section,
+      guardian: result.data.guardian ? {
+        ...prev.guardian,
+        ...result.data.guardian
+      } : prev.guardian
+    }));
+
   } catch (err) {
     console.error("Update error:", err);
     toast.error(err instanceof Error ? err.message : "Update failed");

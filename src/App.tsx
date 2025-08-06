@@ -19,14 +19,29 @@ import NewStudentRegistrationForm from "./components/dashboard/NewStudentRegistr
 import NewRegistrationForPublic from "./components/dashboard/NewRegistrationForPublic";
 import StudentDetailsPage from "./components/dashboard/StudentDetailsPage";
 import StudentDetails from "./pages/dashboard/StudentDetails";
-import AuthWrapper from "./components/auth/AuthWrapper";
+
 import PublicRegistration from "./pages/PublicRegistration";
+import { AuthWrapper } from "./components/auth/AuthWrapper";
+import { TokenService } from "./services/tokenService";
+import { useEffect } from "react";
 
 
 
 const queryClient = new QueryClient();
 
 const App = () => (
+
+  useEffect(() => {
+    // Initialize token refresh when app loads if user is logged in
+    if (TokenService.getAccessToken()) {
+      TokenService.scheduleTokenRefresh();
+    }
+
+    return () => {
+      // Cleanup on unmount if needed
+    };
+  }, []),
+  
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
