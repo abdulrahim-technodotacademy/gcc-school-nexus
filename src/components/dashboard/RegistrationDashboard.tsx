@@ -31,6 +31,7 @@ import {
 import { useState, useEffect } from "react";
 import NewStudentRegistrationForm from "./NewStudentRegistrationForm";
 import { log } from "console";
+import { toast } from "@/hooks/use-toast";
 
 type Student = {
   id: string;
@@ -90,7 +91,7 @@ const RegistrationDashboard = () => {
     const [filteredSections, setFilteredSections] = useState([]);
     const [selectedDepartment, setSelectedDepartment] = useState('');
     const [selectedSection, setSelectedSection] = useState('');
-
+const [promotingStudentId, setPromotingStudentId] = useState<string | null>(null);
   const [selectedStudents, setSelectedStudents] = useState<
     Record<string, boolean>
   >({});
@@ -370,9 +371,20 @@ const rejectStudent = async (studentId: string) => {
 
 const promoteStudent = async (studentId: string, newClass: string, newSection: string) => {
   const token = localStorage.getItem("accessToken");
+  
+  // Validate selections
+  if (!newClass || !newSection) {
+    toast({
+      title: "Error",
+      description: "Please select both class and section",
+      variant: "destructive",
+    });
+    return;
+  }
+
+  setPromotingStudentId(studentId); // Set promoting student ID
 
   try {
-    // First API call - Promote the student
     const promoteRes = await fetch(
       `${import.meta.env.VITE_API_BASE_URL}/students/students/promote/${studentId}/`,
       {
@@ -390,27 +402,14 @@ const promoteStudent = async (studentId: string, newClass: string, newSection: s
 
     if (!promoteRes.ok) throw new Error("Failed to promote");
 
-
-    // Update local state
-    setStudents(prev => prev.map(student => 
-      student.id === studentId 
-        ? { 
-            ...student, 
-            status: "pending",
-            currentClass: newClass,
-            currentSection: newSection,
-            selectedDepartment: "",
-            selectedSection: ""
-          } 
-        : student
-    ));
-
+    // Instead of updating local state, trigger a full reload
     toast({
       title: "Student Promoted",
-      description: "Student has been promoted and requires re-verification",
+      description: "Refreshing student data...",
     });
 
-    window.location.reload(); // Reload to reflect changes
+    // Reload the promotion tab data
+    await loadStudents();
 
   } catch (err) {
     console.error(err);
@@ -419,6 +418,8 @@ const promoteStudent = async (studentId: string, newClass: string, newSection: s
       description: "Failed to complete promotion process",
       variant: "destructive",
     });
+  } finally {
+    setPromotingStudentId(null); // Reset promoting student ID
   }
 };
 
@@ -747,23 +748,31 @@ const filteredStudents = students.filter((student) => {
                               {student.status}
                             </span>
                           </TableCell>
-                          <TableCell className="text-right">
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => {
-                                    promoteStudent(student.id, student.selectedDepartment, student.selectedSection);
-                                }}
-                                disabled={loading || student.status !== "verified"}
-                                >
-                                {loading ? (
-                                    <Loader2 className="h-4 w-4 animate-spin" />
-                                ) : (
-                                    "Promote"
-                                )}
-                                </Button>
-
-                          </TableCell>
+<TableCell className="text-right">
+  <Button
+    variant="outline"
+    size="sm"
+    onClick={async () => {
+      await promoteStudent(
+        student.id, 
+        student.selectedDepartment, 
+        student.selectedSection
+      );
+    }}
+    disabled={
+      promotingStudentId !== null || 
+      student.status !== "verified" ||
+      !student.selectedDepartment ||
+      !student.selectedSection
+    }
+  >
+    {promotingStudentId === student.id ? (
+      <Loader2 className="h-4 w-4 animate-spin" />
+    ) : (
+      "Promote"
+    )}
+  </Button>
+</TableCell>
                         </TableRow>
                       ))}
                     </TableBody>

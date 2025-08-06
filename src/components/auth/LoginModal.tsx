@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import Navigation from "@/components/layout/Navigation";
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
+import { TokenService } from "@/services/tokenService";
 
 interface TokenPayload {
   token_type: string;
@@ -95,48 +96,46 @@ const LoginPage = () => {
     }
   };
 
-  const handleLogin = async (e: React.FormEvent, role: string) => {
-    e.preventDefault();
-    setIsLoading(true);
 
-    if (!credentials.email || !credentials.password) {
-      toast.error("Please fill in all fields");
-      setIsLoading(false);
-      return;
-    }
+const handleLogin = async (e: React.FormEvent, role: string) => {
+  e.preventDefault();
+  setIsLoading(true);
 
-    try {
-      const response = await api.post("/accounts/login/", {
-        email: credentials.email,
-        password: credentials.password,
-      });
-
-      const { access, refresh } = response.data;
-      const decoded: TokenPayload = jwtDecode(access); // Decode access token for expiration
-
-      // Store tokens and user data
-      localStorage.setItem("accessToken", access);
-      localStorage.setItem("refreshToken", refresh);
-      localStorage.setItem("userData", JSON.stringify(decoded));
-
-      // Schedule token refresh before expiration
-      scheduleTokenRefresh(decoded.exp, refresh);
-
-      toast.success(`Welcome ${decoded.first_name}!`);
-      redirectBasedOnRole(decoded.role);
-
-    }catch (error) {
-  console.error("Login error:", error);
-  if (axios.isAxiosError(error)) {  // Added missing parenthesis here
-    toast.error(error.response?.data?.detail || "Invalid email or password");
-  } else {
-    toast.error("Login failed. Please try again.");
+  if (!credentials.email || !credentials.password) {
+    toast.error("Please fill in all fields");
+    setIsLoading(false);
+    return;
   }
-} finally {
-      setIsLoading(false);
-      setActiveRole(null);
+
+  try {
+    const response = await api.post("/accounts/login/", {
+      email: credentials.email,
+      password: credentials.password,
+    });
+
+    const { access, refresh } = response.data;
+    const decoded: TokenPayload = jwtDecode(access);
+
+    // Use TokenService to handle tokens
+    TokenService.setTokens(access, refresh);
+    localStorage.setItem("userData", JSON.stringify(decoded));
+    TokenService.scheduleTokenRefresh();
+
+    toast.success(`Welcome ${decoded.first_name}!`);
+    redirectBasedOnRole(decoded.role);
+
+  } catch (error) {
+    console.error("Login error:", error);
+    if (axios.isAxiosError(error)) {
+      toast.error(error.response?.data?.detail || "Invalid email or password");
+    } else {
+      toast.error("Login failed. Please try again.");
     }
-  };
+  } finally {
+    setIsLoading(false);
+    setActiveRole(null);
+  }
+};
 
   const scheduleTokenRefresh = (expirationTime: number, refreshToken: string) => {
     // Clear any existing timeout
