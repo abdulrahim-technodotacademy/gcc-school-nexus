@@ -410,6 +410,8 @@ const promoteStudent = async (studentId: string, newClass: string, newSection: s
       description: "Student has been promoted and requires re-verification",
     });
 
+    window.location.reload(); // Reload to reflect changes
+
   } catch (err) {
     console.error(err);
     toast({

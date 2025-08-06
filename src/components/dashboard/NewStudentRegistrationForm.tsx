@@ -133,7 +133,7 @@ const NewStudentRegistrationForm = () => {
   const fetchDepartments = async () => {
     setIsLoading((prev) => ({ ...prev, departments: true }));
     try {
-    
+      const accessToken = localStorage.getItem("accessToken");
       const response = await fetch(
         `${import.meta.env.VITE_API_BASE_URL}/students/department/`,
       );
@@ -151,7 +151,7 @@ const NewStudentRegistrationForm = () => {
   const fetchSections = async () => {
     setIsLoading((prev) => ({ ...prev, sections: true }));
     try {
-
+      const accessToken = localStorage.getItem("accessToken");
       const response = await fetch(
         `${import.meta.env.VITE_API_BASE_URL}/students/section/`,
        
